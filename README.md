@@ -6,7 +6,7 @@
 
 # A Unified Deep Learning Benchmark for Satellite Image Restoration and Generation 
 
-This repository contains a small, cross-platform utility script for quickly visualizing tiles from the **AllClear** (or similar) satellite image dataset. It reads `.tif` files, builds true-color RGB previews, and either saves them as PNGs or shows a grid preview for manual inspection. :contentReference[oaicite:0]{index=0}
+This repository contains a small, cross-platform utility script for quickly visualizing tiles from the **AllClear** (or similar) satellite image dataset. It reads `.tif` files, builds true-color RGB previews, and either saves them as PNGs or shows a grid preview for manual inspection.
 
 ---
 
