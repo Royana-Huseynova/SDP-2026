@@ -33,29 +33,80 @@ import argparse
 # ============ 2. Utility functions ============
 def stretch(x):
     x = x.astype("float32")
-    pos = x[x > 0]
-    if pos.size < 100:
-        lo, hi = np.percentile(x, (1, 99))
-    else:
-        lo, hi = np.percentile(pos, (1, 99))
-    return np.clip((x - lo) / (hi - lo + 1e-6), 0, 1)
+
+    # Ignore NaNs in percentile computation
+    vals = x[~np.isnan(x)]
+    if vals.size == 0:
+        # no valid data at all
+        return np.zeros_like(x, dtype="float32")
+
+    lo, hi = np.percentile(vals, (1, 99))
+
+     # If there is basically no contrast, don't pretend it's an image
+    if hi - lo < 1e-6:
+        return np.zeros_like(x, dtype="float32")
+
+    y = (x - lo) / (hi - lo + 1e-6)
+    return np.clip(y, 0, 1)
+
+    # pos = x[x > 0]
+    # if pos.size < 100:
+    #     lo, hi = np.percentile(x, (1, 99))
+    # else:
+    #     lo, hi = np.percentile(pos, (1, 99))
+    # return np.clip((x - lo) / (hi - lo + 1e-6), 0, 1)
 
 def read_rgb(path):
-    """Reads a .tif and returns normalized RGB array (float32, 0–1)."""
+    """Reads a .tif and returns normalized RGB array (float32, 0-1).
+        Returns None for tiles that are basically empty / nodata
+        """
     with rio.open(path) as ds:
         C = ds.count
+        nodata = ds.nodata
         if C >= 4:
             bands = (4, 3, 2)  # Sentinel-2 true color
         elif C == 3:
             bands = (1, 2, 3)
         else:
             x = ds.read(1).astype("float32")
+            # Treat nodata / zeros as invalid where appropriate
+            if nodata is not None:
+                mask = (x == nodata)
+            else:
+                  mask = (x == 0)
+            if (~mask).sum() < 100:
+                # basically empty tile
+                return None
+            
+            x[mask] = np.nan
             x = stretch(x)
-            return np.stack([x]*3, axis=-1)
-
+            rgb = np.stack([x]*3 , axis=-1)
+            return np.nan_to_num(rgb, nan = 0.0)
+        
+        # Read RGB bands as float
         r, g, b = [ds.read(b).astype("float32") for b in bands]
+
+        
+        # Build a validity mask: nodata or pure-zero triplets
+        if nodata is not None:
+            mask = (r == nodata) | (g == nodata) | (b == nodata)
+        else:
+            mask = (r == 0) & (g == 0) & (b == 0)
+
+        # If everything is invalid, skip this tile
+        if (~mask).sum() < 100:
+            return None
+
+        # Sentinel-2 reflectance scaling
         if max(r.max(), g.max(), b.max()) > 1.5:
             r, g, b = r/10000.0, g/10000.0, b/10000.0
+        
+        # Mask invalid pixels as NaN so stretch() ignores them
+        r = np.where(mask, np.nan, r)
+        g = np.where(mask, np.nan, g)
+        b = np.where(mask, np.nan, b)
+
+
         rgb = np.stack([stretch(r), stretch(g), stretch(b)], axis=-1)
         return np.nan_to_num(rgb, nan=0.0)
 
@@ -88,9 +139,15 @@ def main():
     print(f"▶ Processing {len(batch)} files ({args.start}–{args.start+len(batch)-1})\n")
 
     imgs = []
+    skipped_empty = 0
+
     for i, f in enumerate(batch, start + 1):
         try:
             rgb = read_rgb(f)
+            if rgb is None:
+                skipped_empty += 1
+                print(f"⚠️ Skipped (empty/nodata): {f.name}")
+                continue
             img8 = (np.clip(rgb, 0, 1) * 255).astype("uint8")
             if args.grid:
                 imgs.append(img8)
@@ -116,6 +173,8 @@ def main():
         plt.show()
 
     print(f"\n🎉 Done — {len(imgs) if args.grid else len(batch)} images processed successfully.")
+    if skipped_empty:
+        print(f"ℹ️ {skipped_empty} tiles were empty / nodata and were skipped.")
 
 if __name__ == "__main__":
     main()
