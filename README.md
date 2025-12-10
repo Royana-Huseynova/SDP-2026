@@ -56,7 +56,7 @@ Core logic:
 
 ## 3. Requirements
 
-The script will automatically try to install these packages if they are missing:
+Before running the Universal AllClear Dataset Visualizer, make sure you have the following Python packages installed:
 
 - `numpy`
 - `matplotlib`
@@ -65,6 +65,12 @@ The script will automatically try to install these packages if they are missing:
 - `rasterio`
 - `imagecodecs`
 - `zstandard`
+
+You can install all dependencies at once using pip:
+
+```bash
+pip install numpy matplotlib pillow tifffile rasterio imagecodecs zstandard
+
 
 ### Recommended environment (Windows / VS Code)
 

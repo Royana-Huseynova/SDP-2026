@@ -8,22 +8,6 @@ import os, sys, subprocess, platform, numpy as np
 from pathlib import Path
 
 # ============ 1. Ensure dependencies ============
-REQUIRED = [
-    "numpy", "matplotlib", "pillow", "tifffile",
-    "rasterio", "imagecodecs", "zstandard"
-]
-
-def ensure_deps():
-    import importlib
-    for pkg in REQUIRED:
-        try:
-            importlib.import_module(pkg)
-        except ImportError:
-            print(f"📦 Installing {pkg} ...")
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "--quiet", pkg])
-
-ensure_deps()
-
 import matplotlib.pyplot as plt
 from PIL import Image
 import tifffile as tiff
