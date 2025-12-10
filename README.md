@@ -1,9 +1,6 @@
 # SDP-2026
 
 
-
-
-
 # A Unified Deep Learning Benchmark for Satellite Image Restoration and Generation 
 
 This repository contains a small, cross-platform utility script for quickly visualizing tiles from the **AllClear** (or similar) satellite image dataset. It reads `.tif` files, builds true-color RGB previews, and either saves them as PNGs or shows a grid preview for manual inspection.
@@ -70,6 +67,21 @@ You can install all dependencies at once using pip:
 
 ```bash
 pip install numpy matplotlib pillow tifffile rasterio imagecodecs zstandard
+
+## 4. AllClear Dataset Overview
+
+- **Number of regions (ROIs):** 23,742  
+- **Total number of images:** ~4,354,652 TIFF tiles  
+- **Temporal coverage:** Year 2022  
+
+**Modalities / Bands:**  
+- Sentinel-2 optical: 13 spectral bands (true color = Bands 4,3,2)  
+- Landsat-8/9 optical: 12 spectral bands  
+- Sentinel-1 SAR: 2 polarization channels (VV, VH)  
+- Auxiliary products: cloud masks, land-cover maps, metadata  
+
+**File details:**  
+- File format: `.tif` (GeoTIFF)
 
 
 ### Recommended environment (Windows / VS Code)
