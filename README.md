@@ -124,7 +124,7 @@ If set, show an on-screen grid preview (using matplotlib) instead of saving PNGs
 
 Examples
 5.1. Basic: save first 10 tiles as PNGs
-python visualize_allclear_universal.py --data allclear_dataset --start 1 --count 10
+python scripts/visualize_allclear_cli.py --data allclear_dataset --start 1 --count 10
 
 
 This will:
@@ -141,7 +141,7 @@ truecolor_previews_universal/
     ...
 
 5.2. Show a grid of previews (no files saved)
-python visualize_allclear_universal.py --data allclear_dataset --start 1 --count 12 --grid
+python scripts/visualize_allclear_cli.py --data allclear_dataset --start 1 --count 12 --grid
 
 
 Opens a matplotlib window with up to 3 columns and multiple rows
@@ -151,7 +151,7 @@ Shows image titles with the original .tif filenames
 Does not write PNGs to disk
 
 5.3. Use a custom dataset path
-python visualize_allclear_universal.py --data D:\datasets\AllClear --start 50 --count 20
+python scripts/visualize_allclear_cli.py --data D:\datasets\AllClear --start 50 --count 20
 
 6. Output
 
