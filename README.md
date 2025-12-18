@@ -65,7 +65,6 @@ Before running the Universal AllClear Dataset Visualizer, make sure you have the
 
 You can install all dependencies at once using pip:
 
-```bash
 pip install numpy matplotlib pillow tifffile rasterio imagecodecs zstandard
 
 ## 4. AllClear Dataset Overview
