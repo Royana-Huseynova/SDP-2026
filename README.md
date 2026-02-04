@@ -101,7 +101,7 @@ You do not need to manually install the listed packages; the script will attempt
 
 pip install numpy matplotlib pillow tifffile rasterio imagecodecs zstandard
 
-4. Dataset Structure
+## 5. Dataset Structure
 
 By default, the script expects a folder like:
 
@@ -119,7 +119,7 @@ The script recursively searches all subfolders under --data for .tif files.
 
 You can point --data to any root folder containing .tif tiles; it does not have to be named allclear_dataset.
 
-## 5. Usage
+## 6. Usage
 
 From the repository root, in a terminal (PowerShell on Windows):
 
@@ -140,7 +140,7 @@ Number of images to process starting from --start (default: 10).
 If set, show an on-screen grid preview (using matplotlib) instead of saving PNGs.
 
 Examples
-5.1. Basic: save first 10 tiles as PNGs
+6.1. Basic: save first 10 tiles as PNGs
 python scripts/visualize_allclear_cli.py --data allclear_dataset --start 1 --count 10
 
 
@@ -157,7 +157,7 @@ truecolor_previews_universal/
     00002_<original_name>.png
     ...
 
-5.2. Show a grid of previews (no files saved)
+6.2. Show a grid of previews (no files saved)
 python scripts/visualize_allclear_cli.py --data allclear_dataset --start 1 --count 12 --grid
 
 
@@ -167,10 +167,10 @@ Shows image titles with the original .tif filenames
 
 Does not write PNGs to disk
 
-5.3. Use a custom dataset path
+6.3. Use a custom dataset path
 python scripts/visualize_allclear_cli.py --data D:\datasets\AllClear --start 50 --count 20
 
-## 6. Output
+## 7. Output
 
 When not using --grid:
 
