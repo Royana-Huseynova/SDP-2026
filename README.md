@@ -119,7 +119,7 @@ The script recursively searches all subfolders under --data for .tif files.
 
 You can point --data to any root folder containing .tif tiles; it does not have to be named allclear_dataset.
 
-5. Usage
+## 5. Usage
 
 From the repository root, in a terminal (PowerShell on Windows):
 
@@ -170,7 +170,7 @@ Does not write PNGs to disk
 5.3. Use a custom dataset path
 python scripts/visualize_allclear_cli.py --data D:\datasets\AllClear --start 50 --count 20
 
-6. Output
+## 6. Output
 
 When not using --grid:
 
