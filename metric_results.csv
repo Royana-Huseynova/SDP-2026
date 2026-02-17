@@ -1,0 +1,17 @@
+ROI,Image,Reference,PSNR_dB,SSIM
+roi100011,roi100011_s2_toa_2022_3_28_median.tif,roi100011_s2_toa_2022_3_28_median.tif,inf,1.0
+roi100011,roi100011_s2_toa_2022_4_12_median.tif,roi100011_s2_toa_2022_3_28_median.tif,9.56,0.3515
+roi100011,roi100011_s2_toa_2022_4_2_median.tif,roi100011_s2_toa_2022_3_28_median.tif,8.74,0.1395
+roi100011,roi100011_s2_toa_2022_4_7_median.tif,roi100011_s2_toa_2022_3_28_median.tif,9.22,0.3526
+roi1002110,roi1002110_s2_toa_2022_7_30_median.tif,roi1002110_s2_toa_2022_7_30_median.tif,inf,1.0
+roi1002110,roi1002110_s2_toa_2022_8_1_median.tif,roi1002110_s2_toa_2022_7_30_median.tif,7.52,0.1228
+roi1002110,roi1002110_s2_toa_2022_8_4_median.tif,roi1002110_s2_toa_2022_7_30_median.tif,8.69,0.1425
+roi1002110,roi1002110_s2_toa_2022_8_6_median.tif,roi1002110_s2_toa_2022_7_30_median.tif,10.31,0.2103
+roi1004052,roi1004052_s2_toa_2022_8_15_median.tif,roi1004052_s2_toa_2022_8_15_median.tif,inf,1.0
+roi1004052,roi1004052_s2_toa_2022_8_17_median.tif,roi1004052_s2_toa_2022_8_15_median.tif,9.05,0.2646
+roi1004052,roi1004052_s2_toa_2022_8_18_median.tif,roi1004052_s2_toa_2022_8_15_median.tif,10.15,0.1833
+roi1004052,roi1004052_s2_toa_2022_8_20_median.tif,roi1004052_s2_toa_2022_8_15_median.tif,10.27,0.2166
+roi1004208,roi1004208_s2_toa_2022_6_11_median.tif,roi1004208_s2_toa_2022_6_11_median.tif,inf,1.0
+roi1004208,roi1004208_s2_toa_2022_6_13_median.tif,roi1004208_s2_toa_2022_6_11_median.tif,16.51,0.7472
+roi1004208,roi1004208_s2_toa_2022_6_14_median.tif,roi1004208_s2_toa_2022_6_11_median.tif,6.91,0.1344
+roi1004208,roi1004208_s2_toa_2022_6_9_median.tif,roi1004208_s2_toa_2022_6_11_median.tif,20.28,0.8154
