@@ -1,0 +1,3 @@
+[submodule "external/allclear"]
+	path = external/allclear
+	url = https://github.com/Zhou-Hangyu/allclear
