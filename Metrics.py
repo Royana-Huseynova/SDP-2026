@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Universal AllClear Dataset Visualizer
+Universal AllClear Dataset Visualizer with Metrics
 Author: Nijat Alisoy, Huseyn Sadatkhanov, Pasha Zulfugarli, Royana Huseynova
 Works on: Windows, macOS, Linux
 """
@@ -20,6 +20,11 @@ except Exception as e:
     )
 import torch
 import csv
+import pyiqa
+
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+lpips_metric = pyiqa.create_metric("lpips", device=device)
 
 # ===== Utility functions =====
 def stretch(x):
@@ -88,6 +93,21 @@ def compute_ssim(img, reference):
         scores.append(score)
     return float(np.mean(scores))
 
+def compute_lpips(img, reference):
+    """
+    LPIPS between two HxWxC images in [0,1].
+    Returns a float (lower is better).
+    """
+    # HWC -> NCHW and move to device
+    img_t = torch.from_numpy(img).permute(2, 0, 1).unsqueeze(0).float().to(device)
+    ref_t = torch.from_numpy(reference).permute(2, 0, 1).unsqueeze(0).float().to(device)
+
+    with torch.no_grad():
+        val = lpips_metric(img_t, ref_t)  # returns tensor
+    return float(val.item())
+
+
+
 # ===== Main function =====
 def main():
     parser = argparse.ArgumentParser(description="AllClear PSNR evaluation for s2_toa images")
@@ -131,18 +151,20 @@ def main():
                 continue
             psnr_value = compute_psnr(img_rgb, reference_rgb)
             ssim_value = compute_ssim(img_rgb, reference_rgb)
+            lpips_value = compute_lpips(img_rgb, reference_rgb)
             results.append({
                 "ROI": roi.name,
                 "Image": img_path.name,
                 "Reference": reference_path.name,
                 "PSNR_dB": round(psnr_value, 2),
                 "SSIM": round(ssim_value, 4),
+                "LPIPS": round(lpips_value, 4),
             })
-            print(f"{img_path.name} vs {reference_path.name} | PSNR: {psnr_value:.2f} dB | SSIM: {ssim_value:.4f}")
+            print(f"{img_path.name} vs {reference_path.name} | PSNR: {psnr_value:.2f} dB | SSIM: {ssim_value:.4f} | LPIPS: {lpips_value:.4f}")
 
     # Save results to CSV
     with open(args.csv, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["ROI", "Image", "Reference", "PSNR_dB", "SSIM"])
+        writer = csv.DictWriter(f, fieldnames=["ROI", "Image", "Reference", "PSNR_dB", "SSIM", "LPIPS"])
         writer.writeheader()
         for row in results:
             writer.writerow(row)
