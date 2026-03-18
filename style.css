@@ -97,14 +97,14 @@ nav a:focus {
 
 .hero {
   text-align: center;
-  padding: 30px 20px 20px;
+  padding: 60px 20px 40px;
   margin-top: 0;
 }
 
 .hero h2 {
-  margin: 0;
+  margin: 0 0 30px 0;
   font-size: clamp(1.5rem, 4vw, 2.2rem);
-  line-height: 1.3;
+  line-height: 1.4;
   color: #e5f3ff;
   text-align: center;
 }
@@ -136,13 +136,14 @@ nav a:focus {
 }
 
 section {
-  padding: 64px 8vw;
+  padding: 90px 8vw;
   max-width: 1300px;
   margin: 0 auto;
 }
 
 section h2 {
-  margin-bottom: 18px;
+  margin-bottom: 42px;
+  margin-top: 0;
   color: #f0f8ff;
   font-size: 2rem;
   letter-spacing: 0.4px;
@@ -157,22 +158,34 @@ section li {
 
 #intro p {
   max-width: 1000px;
-  margin-bottom: 18px;
+  margin: 0 auto 24px auto;
   text-align: justify;
-  line-height: 1.8;
+  line-height: 1.85;
+  font-size: 1rem;
+}
+
+#intro p:last-child {
+  margin-bottom: 0;
 }
 
 #project p {
   max-width: 1000px;
-  margin-bottom: 18px;
+  margin: 0 auto 24px auto;
   text-align: justify;
-  line-height: 1.8;
+  line-height: 1.85;
+  font-size: 1rem;
+}
+
+#project p:last-child {
+  margin-bottom: 0;
 }
 
 .team-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 28px;
+  gap: 32px;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
 .member {
@@ -243,10 +256,13 @@ section li {
 }
 
 .results-showcase {
-  margin-top: 30px;
+  margin-top: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 32px;
+  gap: 40px;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .result-image-container {
@@ -273,7 +289,9 @@ section li {
 .resources-list {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 10px;
+  gap: 16px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .resources-list a {
@@ -290,10 +308,11 @@ section li {
 
 footer {
   text-align: center;
-  padding: 22px 14px;
+  padding: 40px 14px;
   background: rgba(2, 7, 21, 0.85);
   color: #c7d8f3;
   border-top: 1px solid rgba(179, 215, 255, 0.15);
+  margin-top: 30px;
 }
 
 @media (max-width: 900px) {
