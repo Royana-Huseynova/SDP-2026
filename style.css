@@ -513,11 +513,28 @@ section li {
 
 footer {
   text-align: center;
-  padding: 40px 14px;
+  padding: 24px 14px;
   background: rgba(2, 7, 21, 0.85);
   color: #c7d8f3;
   border-top: 1px solid rgba(179, 215, 255, 0.15);
   margin-top: 30px;
+}
+
+footer p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+footer p:first-child {
+  margin-bottom: 6px;
+  color: #b8d8ff;
+  font-weight: 500;
+}
+
+.footer-credit {
+  font-size: 0.8rem;
+  color: #8ba3c6;
 }
 
 @media (max-width: 900px) {
