@@ -162,6 +162,13 @@ section li {
   line-height: 1.8;
 }
 
+#project p {
+  max-width: 1000px;
+  margin-bottom: 18px;
+  text-align: justify;
+  line-height: 1.8;
+}
+
 .team-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
