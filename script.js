@@ -21,3 +21,41 @@ for (let i = 0; i < starCount; i++) {
 const style = document.createElement('style');
 style.textContent = `@keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.95; } }`;
 document.head.appendChild(style);
+
+// Image Lightbox Modal
+const modal = document.getElementById('imageModal');
+const closeBtn = document.querySelector('.close-btn');
+const clickableImages = document.querySelectorAll('.clickable-image');
+const modalImage = document.querySelector('.modal-image');
+
+// Open modal when image is clicked
+clickableImages.forEach(img => {
+  img.addEventListener('click', function() {
+    modal.classList.add('show');
+    modalImage.src = this.src;
+    modalImage.alt = this.alt;
+    document.body.style.overflow = 'hidden';
+  });
+});
+
+// Close modal
+function closeModal() {
+  modal.classList.remove('show');
+  document.body.style.overflow = 'auto';
+}
+
+closeBtn.addEventListener('click', closeModal);
+
+// Close modal when clicking outside the image
+modal.addEventListener('click', function(event) {
+  if (event.target === modal) {
+    closeModal();
+  }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    closeModal();
+  }
+});
