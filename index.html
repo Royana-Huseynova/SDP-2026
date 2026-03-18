@@ -1,263 +1,181 @@
-     1	<!DOCTYPE html>
-     2	<html lang="en">
-     3	<head>
-     4	    <meta charset="UTF-8" />
-     5	    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-     6	    <title>Satellite Benchmark</title>
-     7	
-     8	    <link rel="stylesheet" href="style.css" />
-     9	    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    10	</head>
-    11	<body>
-    12	
-    13	    <div id="dynamic-bg" aria-hidden="true">
-    14	        <div class="bg-layer active"></div>
-    15	        <div class="bg-layer"></div>
-    16	    </div>
-    17	
-    18	    <canvas id="bg-canvas"></canvas>
-    19	    <nav class="navbar">
-    20	        <ul class="nav-links">
-    21	            <li><a href="#intro">Introduction</a></li>
-    22	            <li><a href="#project">Project</a></li>
-    23	            <li><a href="#datasets">Datasets</a></li>
-    24	            <li><a href="#results">Results</a></li>
-    25	            <li><a href="#team">Team</a></li>
-    26	            <li><a href="#links">Useful Links</a></li>
-    27	        </ul>
-    28	    </nav>
-    29	
-    30	    <header class="hero">
-    31	        <div class="hero-overlay"></div>
-    32	
-    33	        <div class="hero-content">
-    34	            <h1>Unified Deep Learning Benchmark for Satellite Image Restoration and Generation</h1>
-    35	        </div>
-    36	    </header>
-    37	
-    38	
-    39	
-    40	    <section id="intro" class="section-block">
-    41	        <div class="section-header">
-    42	            <h2 class="section-label section-main-label">INTRODUCTION</h2>
-    43	        </div>
-    44	
-    45	        <div class="section-card">
-    46	            <p>
-    47	                Modern deep learning methods have significantly advanced the field of satellite image restoration and generation, enabling high-quality cloud removal, super-resolution, and high-definition reconstruction from multi-spectral remote sensing data.
-    48	            </p>
-    49	
-    50	            <p>
-    51	                However, existing evaluation practices remain fragmented, with different datasets, preprocessing pipelines, and metric definitions used across studies. This lack of standardization makes fair comparison between models difficult and limits reproducibility in remote sensing research.
-    52	            </p>
-    53	
-    54	            <p>
-    55	                The Unified Deep Learning Benchmark for Satellite Image Restoration and Generation is designed to address this problem by providing a consistent and extensible benchmarking framework for evaluating deep learning models across multiple satellite datasets and processing tasks. The system integrates widely used datasets such as AllClear, SEN12MS-CR-TS, WorldStrat, PROBA-V SR, and SAT25K into a single evaluation pipeline with standardized normalization, spectral band alignment, and metric computation.
-    56	            </p>
-    57	
-    58	            <p>
-    59	                Our framework supports multiple restoration and generation tasks, including cloud removal, super-resolution, and high-definition image synthesis, while ensuring that all experiments follow the same preprocessing rules, evaluation metrics, and reporting structure. In addition to quantitative evaluation using metrics such as PSNR, SSIM, SAM, ERGAS, QNR, and FID, the system provides visualization tools, reproducibility logging, and structured experiment outputs to support reliable scientific analysis.
-    60	            </p>
-    61	
-    62	            <p>
-    63	                By establishing a unified and reproducible evaluation environment, this project aims to improve transparency, consistency, and comparability in satellite image processing research, and to provide a practical reference framework that can be extended to future datasets, models, and remote sensing applications.
-    64	            </p>
-    65	        </div>
-    66	    </section>
-    67	
-    68	
-    69	    <section id="project" class="section-block">
-    70	        <div class="section-header">
-    71	            <h2 class="section-label section-main-label">PROJECT</h2>
-    72	        </div>
-    73	
-    74	        <div class="section-card">
-    75	            <p>The project implements a unified benchmarking pipeline for evaluating deep learning models on satellite image restoration and generation tasks.</p>
-    76	
-    77	            <p>The framework supports multiple datasets, including AllClear, SEN12MS-CR-TS, WorldStrat, PROBA-V SR, and SAT25K, and applies consistent preprocessing, normalization, and spectral band alignment to ensure fair comparison across models.</p>
-    78	
-    79	            <p>The system enables evaluation of cloud removal, super-resolution, and high-definition image generation models using standardized metrics such as PSNR, SSIM, SAM, ERGAS, QNR, and FID.</p>
-    80	
-    81	            <p>In addition to quantitative evaluation, the pipeline provides visualization tools, reproducibility logging, and structured experiment outputs, allowing reliable comparison and analysis of different approaches.</p>
-    82	        </div>
-    83	    </section>
-    84	
-    85	    <section id="datasets" class="section-block">
-    86	        <div class="section-header">
-    87	            <h2 class="section-label section-main-label">DATASETS</h2>
-    88	        </div>
-    89	
-    90	        <div class="section-card">
-    91	            <p>The benchmark integrates the following datasets through a standardized preprocessing and evaluation workflow:</p>
-    92	            <ul class="dataset-links">
-    93	                <li><a href="https://huggingface.co/datasets/isp-uv-es/allclear" target="_blank" rel="noopener noreferrer">AllClear</a></li>
-    94	                <li><a href="https://mediatum.ub.tum.de/1474000" target="_blank" rel="noopener noreferrer">SEN12MS-CR-TS</a></li>
-    95	                <li><a href="https://github.com/worldstrat/worldstrat" target="_blank" rel="noopener noreferrer">WorldStrat</a></li>
-    96	                <li><a href="https://kelvins.esa.int/proba-v-super-resolution/" target="_blank" rel="noopener noreferrer">PROBA-V SR</a></li>
-    97	                <li><a href="https://www.kaggle.com/datasets/abhinand05/satellite-image-classification" target="_blank" rel="noopener noreferrer">SAT25K</a></li>
-    98	            </ul>
-    99	        </div>
-   100	    </section>
-   101	
-   102	
-   103	    <section id="results" class="section-block">
-   104	        <div class="section-header">
-   105	            <h2 class="section-label section-main-label">RESULTS</h2>
-   106	        </div>
-   107	
-   108	        <div class="section-card">
-   109	            <p>Models are evaluated using PSNR, SSIM, SAM, ERGAS, QNR and FID metrics.</p>
-   110	
-   111	            <div class="table-wrapper">
-   112	                <table class="results-table">
-   113	                    <thead>
-   114	                        <tr>
-   115	                            <th>Model</th>
-   116	                            <th>Dataset</th>
-   117	                            <th>PSNR</th>
-   118	                            <th>SSIM</th>
-   119	                            <th>SAM</th>
-   120	                            <th>ERGAS</th>
-   121	                            <th>FID</th>
-   122	                        </tr>
-   123	                    </thead>
-   124	
-   125	                    <tbody>
-   126	                        <tr>
-   127	                            <td>Model A</td>
-   128	                            <td>AllClear</td>
-   129	                            <td>32.4</td>
-   130	                            <td>0.91</td>
-   131	                            <td>2.1</td>
-   132	                            <td>3.5</td>
-   133	                            <td>18.2</td>
-   134	                        </tr>
-   135	
-   136	                        <tr>
-   137	                            <td>Model B</td>
-   138	                            <td>AllClear</td>
-   139	                            <td>34.1</td>
-   140	                            <td>0.93</td>
-   141	                            <td>1.8</td>
-   142	                            <td>3.1</td>
-   143	                            <td>16.5</td>
-   144	                        </tr>
-   145	
-   146	                        <tr>
-   147	                            <td>Model C</td>
-   148	                            <td>AllClear</td>
-   149	                            <td>35.0</td>
-   150	                            <td>0.94</td>
-   151	                            <td>1.6</td>
-   152	                            <td>2.8</td>
-   153	                            <td>15.2</td>
-   154	                        </tr>
-   155	                    </tbody>
-   156	                </table>
-   157	            </div>
-   158	        </div>
-   159	    </section>
-   160	
-   161	
-   162	    <section id="team" class="section-block">
-   163	        <div class="section-header">
-   164	            <h2 class="section-label section-main-label">TEAM</h2>
-   165	        </div>
-   166	
-   167	        <div class="team-container">
-   168	            <div class="member">
-   169	                <h3>Royana Huseynova</h3>
-   170	                <p class="role">Team Lead</p>
-   171	                <p>Developed the benchmarking pipeline and system architecture.</p>
-   172	                <div class="contact">
-   173	                    <a href="mailto:rhuseynova11270@ada.edu.az">Email</a>
-   174	                    <a href="https://www.linkedin.com/in/royana-huseynova-6a9ba0333/" target="_blank">LinkedIn</a>
-   175	                </div>
-   176	            </div>
-   177	
-   178	            <div class="member">
-   179	                <h3>Nijat Alisoy</h3>
-   180	                <p class="role">Dataset Integration</p>
-   181	                <p>Implemented dataset preprocessing and normalization.</p>
-   182	                <div class="contact">
-   183	                    <a href="mailto:nalisoy17366@ada.edu.az">Email</a>
-   184	                    <a href="https://www.linkedin.com/in/nijat-alisoy-4776a4184/" target="_blank">LinkedIn</a>
-   185	                </div>
-   186	            </div>
-   187	
-   188	            <div class="member">
-   189	                <h3>Pasha Zulfugarli</h3>
-   190	                <p class="role">Dataset Analysis & Website Development</p>
-   191	                <p>Analyzed datasets and worked on building the project website.</p>
-   192	                <div class="contact">
-   193	                    <a href="mailto:pzulfugarli13731@ada.edu.az">Email</a>
-   194	                    <a href="https://www.linkedin.com/in/pasa-zulfugarli/" target="_blank">LinkedIn</a>
-   195	                </div>
-   196	            </div>
-   197	
-   198	            <div class="member">
-   199	                <h3>Huseyn Sadatkhanov</h3>
-   200	                <p class="role">Visualization & Website Development</p>
-   201	                <p>Created visualization tools and worked on website design.</p>
-   202	                <div class="contact">
-   203	                    <a href="mailto:hsadatkhanov13770@ada.edu.az">Email</a>
-   204	                    <a href="https://www.linkedin.com/in/huseyn-sadatkhanov-0378181b4/" target="_blank">LinkedIn</a>
-   205	                </div>
-   206	            </div>
-   207	        </div>
-   208	    </section>
-   209	
-   210	    <section id="links" class="section-block">
-   211	        <div class="section-header">
-   212	            <h2 class="section-label section-main-label">USEFUL LINKS</h2>
-   213	        </div>
-   214	        <p class="section-subtitle">Access the repository, reports, design documents, and supporting resources related to the Unified Deep Learning Benchmark for Satellite Image Restoration and Generation.</p>
-   215	
-   216	        <div class="resource-grid">
-   217	            <article class="resource-card">
-   218	                <div class="resource-title"><span class="resource-icon" aria-hidden="true">⌘</span><h3>GitHub Repository</h3></div>
-   219	                <p>Source code, scripts, and benchmarking pipeline.</p>
-   220	                <a href="https://github.com/UnifiedSatAI/UnifiedSatAI.github.io" target="_blank" rel="noopener noreferrer">Open →</a>
-   221	            </article>
-   222	
-   223	            <article class="resource-card">
-   224	                <div class="resource-title"><span class="resource-icon" aria-hidden="true">▤</span><h3>Final Report</h3></div>
-   225	                <p>Complete SDP report with methodology, milestones, and evaluation strategy.</p>
-   226	                <a href="#" aria-label="Final report link placeholder">Open →</a>
-   227	            </article>
-   228	
-   229	            <article class="resource-card">
-   230	                <div class="resource-title"><span class="resource-icon" aria-hidden="true">▦</span><h3>Research Report</h3></div>
-   231	                <p>Background research and supporting technical analysis.</p>
-   232	                <a href="#" aria-label="Research report link placeholder">Open →</a>
-   233	            </article>
-   234	
-   235	            <article class="resource-card">
-   236	                <div class="resource-title"><span class="resource-icon" aria-hidden="true">◫</span><h3>User Design Document</h3></div>
-   237	                <p>Use cases, workflow, and system architecture design.</p>
-   238	                <a href="#" aria-label="User design document link placeholder">Open →</a>
-   239	            </article>
-   240	
-   241	            <article class="resource-card">
-   242	                <div class="resource-title"><span class="resource-icon" aria-hidden="true">◍</span><h3>Metric Library (IQA-PyTorch)</h3></div>
-   243	                <p>Evaluation toolkit used for benchmark metrics.</p>
-   244	                <a href="https://github.com/chaofengc/IQA-PyTorch" target="_blank" rel="noopener noreferrer">Open →</a>
-   245	            </article>
-   246	
-   247	            <article class="resource-card">
-   248	                <div class="resource-title"><span class="resource-icon" aria-hidden="true">◎</span><h3>Project Website</h3></div>
-   249	                <p>Live presentation page for the benchmark project.</p>
-   250	                <a href="https://unifiedsatai.github.io/" target="_blank" rel="noopener noreferrer">Open →</a>
-   251	            </article>
-   252	        </div>
-   253	    </section>
-   254	
-   255	    <footer>
-   256	        <p>SDP 2026 Satellite Benchmark</p>
-   257	    </footer>
-   258	
-   259	    <script src="script.js"></script>
-   260	</body>
-   261	</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Satellite Benchmark</title>
+
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<nav class="navbar">
+    <ul class="nav-links">
+        <li><a href="#intro">Introduction</a></li>
+        <li><a href="#team">Team</a></li>
+        <li><a href="#project">Project</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#links">Useful Links</a></li>
+    </ul>
+</nav>
+
+<header class="hero">
+    <h1>
+        Unified Deep Learning Benchmark for Satellite Image Restoration and Generation
+    </h1>
+</header>
 
 
+<section id="intro" class="section-block">
+
+<h2>INTRODUCTION</h2>
+
+<div class="section-card">
+
+<p>
+Modern deep learning methods have significantly advanced the field of satellite image restoration and generation, enabling high-quality cloud removal, super-resolution, and high-definition reconstruction.
+</p>
+
+<p>
+However, evaluation practices remain fragmented across datasets and metrics, making comparison difficult.
+</p>
+
+<p>
+This project introduces a unified benchmarking framework integrating multiple datasets and standardized preprocessing.
+</p>
+
+<p>
+The system evaluates models using PSNR, SSIM, SAM, ERGAS, QNR and FID metrics.
+</p>
+
+</div>
+
+</section>
+
+
+<section id="team" class="section-block">
+
+<h2>TEAM</h2>
+
+<div class="team-container">
+
+<div class="member">
+<h3>Royana Huseynova</h3>
+<p>Team Lead</p>
+</div>
+
+<div class="member">
+<h3>Nijat Alisoy</h3>
+<p>Dataset Integration</p>
+</div>
+
+<div class="member">
+<h3>Pasha Zulfugarli</h3>
+<p>Dataset Analysis</p>
+</div>
+
+<div class="member">
+<h3>Huseyn Sadatkhanov</h3>
+<p>Visualization</p>
+</div>
+
+</div>
+
+</section>
+
+
+
+<section id="project" class="section-block">
+
+<h2>PROJECT</h2>
+
+<div class="section-card">
+
+<p>
+The project develops a unified pipeline for benchmarking satellite image restoration models.
+</p>
+
+<p>
+Datasets include AllClear, SEN12MS, WorldStrat, PROBA-V SR and SAT25K.
+</p>
+
+<p>
+The pipeline ensures consistent preprocessing and evaluation.
+</p>
+
+</div>
+
+</section>
+
+
+
+<section id="results" class="section-block">
+
+<h2>RESULTS</h2>
+
+<div class="section-card">
+
+<table class="results-table">
+
+<tr>
+<th>Model</th>
+<th>Dataset</th>
+<th>PSNR</th>
+<th>SSIM</th>
+</tr>
+
+<tr>
+<td>A</td>
+<td>AllClear</td>
+<td>32.4</td>
+<td>0.91</td>
+</tr>
+
+<tr>
+<td>B</td>
+<td>AllClear</td>
+<td>34.1</td>
+<td>0.93</td>
+</tr>
+
+</table>
+
+</div>
+
+</section>
+
+
+
+<section id="links" class="section-block">
+
+<h2>USEFUL LINKS</h2>
+
+<div class="section-card">
+
+<ul>
+
+<li>NASA Earth Science</li>
+<li>SEN12MS Dataset</li>
+<li>SAT25K Dataset</li>
+<li>PSNR Reference</li>
+<li>SSIM Reference</li>
+
+</ul>
+
+</div>
+
+</section>
+
+
+<footer>
+SDP 2026 Satellite Benchmark
+</footer>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
