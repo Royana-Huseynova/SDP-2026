@@ -220,43 +220,32 @@ section li {
   text-decoration: underline;
 }
 
-.results-gallery {
-  margin-top: 22px;
+.results-showcase {
+  margin-top: 30px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 18px;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
 }
 
-.result-card {
+.result-image-container {
   background: rgba(8, 22, 50, 0.75);
   border: 1px solid rgba(143, 197, 255, 0.25);
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   transition: transform 0.25s ease, border-color 0.25s ease;
 }
 
-.result-card:hover {
-  transform: translateY(-5px);
+.result-image-container:hover {
+  transform: translateY(-8px);
   border-color: rgba(0, 188, 212, 0.7);
+  box-shadow: 0 20px 40px rgba(0, 188, 212, 0.2);
 }
 
-.result-card img {
+.result-image-container img {
   width: 100%;
   display: block;
   object-fit: cover;
-  height: 160px;
-}
-
-.result-card h4 {
-  margin: 12px;
-  margin-bottom: 4px;
-  color: #d2e8ff;
-}
-
-.result-card p {
-  margin: 0 12px 10px;
-  color: #cddff5;
-  font-size: 0.9rem;
 }
 
 .resources-list {
