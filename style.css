@@ -97,16 +97,16 @@ nav a:focus {
 
 .hero {
   text-align: center;
-  padding: 20px 20px 0;
+  padding: 60px 20px 40px;
   margin-top: 0;
-  display: none;
 }
 
 .hero h2 {
   margin: 0;
-  font-size: clamp(1.5rem, 5vw, 3.2rem);
-  line-height: 1.1;
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  line-height: 1.2;
   color: #e5f3ff;
+  text-align: center;
 }
 
 .hero p {
@@ -146,6 +146,7 @@ section h2 {
   color: #f0f8ff;
   font-size: 2rem;
   letter-spacing: 0.4px;
+  text-align: center;
 }
 
 section p,
