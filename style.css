@@ -165,16 +165,19 @@ section li {
 .team-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
+  gap: 28px;
 }
 
 .member {
   background: rgba(7, 26, 55, 0.85);
-  padding: 22px;
+  padding: 28px;
   border-radius: 14px;
   border: 1px solid rgba(143, 197, 255, 0.28);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .member:hover {
@@ -183,41 +186,53 @@ section li {
 }
 
 .member h3 {
-  margin-top: 0;
-  margin-bottom: 6px;
+  margin: 0 0 8px 0;
   color: #c9dbff;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .role {
   color: #92c4ff;
   font-weight: 700;
-  margin-bottom: 8px;
+  font-size: 0.95rem;
+  margin: 0 0 12px 0;
+  letter-spacing: 0.3px;
 }
 
 .member p {
-  margin: 8px 0 15px;
+  margin: 0 0 16px 0;
   color: #d4e6ff;
+  font-size: 0.96rem;
+  line-height: 1.6;
+  flex-grow: 1;
 }
 
 .contact {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: 12px;
 }
 
 .contact a {
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   color: #a8ddff;
   text-decoration: none;
-  padding: 6px 10px;
+  padding: 8px 14px;
   border-radius: 8px;
-  border: 1px solid rgba(168, 221, 255, 0.5);
-  transition: background 0.2s ease;
+  border: 1.5px solid rgba(168, 221, 255, 0.6);
+  transition: all 0.2s ease;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .contact a:hover {
-  background: rgba(83, 160, 255, 0.2);
-  text-decoration: underline;
+  background: rgba(83, 160, 255, 0.25);
+  border-color: rgba(79, 195, 247, 0.9);
+  color: #ffffff;
 }
 
 .results-showcase {
