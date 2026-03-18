@@ -156,8 +156,10 @@ section li {
 }
 
 #intro p {
-  max-width: 900px;
-  margin-bottom: 14px;
+  max-width: 1000px;
+  margin-bottom: 18px;
+  text-align: justify;
+  line-height: 1.8;
 }
 
 .team-container {
