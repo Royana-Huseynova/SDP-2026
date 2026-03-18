@@ -63,10 +63,26 @@ nav {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px 32px;
-  background: rgba(5, 25, 47, 0.82);
-  backdrop-filter: blur(7px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 16px 32px;
+  background: rgba(5, 25, 47, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(79, 195, 247, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.nav-brand {
+  position: absolute;
+  left: 32px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #4fbeff 0%, #00bcd4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 nav h1 {
@@ -75,24 +91,52 @@ nav h1 {
 
 nav ul {
   display: flex;
-  gap: 32px;
+  gap: 8px;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 nav a {
-  color: #d6e6ff;
+  color: #c5deff;
   text-decoration: none;
   font-weight: 600;
-  font-size: 1.08rem;
-  padding: 10px 12px;
+  font-size: 0.95rem;
+  padding: 10px 18px;
   border-radius: 8px;
+  position: relative;
+  transition: all 0.3s ease;
+  letter-spacing: 0.4px;
 }
 
-nav a:hover,
+nav a::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  left: 18px;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #4fbeff, #00e5ff);
+  transition: width 0.3s ease;
+  border-radius: 1px;
+}
+
+nav a:hover {
+  color: #ffffff;
+  background: rgba(79, 195, 247, 0.12);
+}
+
+nav a:hover::after {
+  width: calc(100% - 36px);
+}
+
 nav a:focus {
-  background: rgba(92, 175, 255, 0.2);
+  color: #ffffff;
+  background: rgba(79, 195, 247, 0.15);
+}
+
+nav a:focus::after {
+  width: calc(100% - 36px);
 }
 
 .hero {
