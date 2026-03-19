@@ -29,150 +29,239 @@ This repository contains a small, cross-platform utility script for quickly visu
 
 ---
 
-## 2. Script Overview
+# Run Instructions
 
-Main file:
+## 1. Repository structure
 
-- `visualize_allclear_universal.py`  
-  Universal visualizer script using:
-  - `rasterio` for reading `.tif` tiles
-  - `numpy` for numerical operations and normalization
-  - `Pillow` (`PIL.Image`) for saving PNGs
-  - `matplotlib` for grid previews
+This project uses:
 
-Core logic:
+- `external/` for the AllClear codebase and baselines
+- `results/` for generated outputs
+- `scripts/` for helper launch scripts
+- `src/` for custom visualization and utility scripts
 
-- Recursively scans the dataset folder for all `.tif` files
-- Selects a slice from the list using `--start` and `--count`
-- For each tile:
-  - Reads the image bands
-  - Applies scaling and percentile stretching
-  - Skips tiles that are essentially empty / nodata
-  - Either:
-    - Saves as PNG into `truecolor_previews_universal/`, or
-    - Adds to an in-memory list for grid visualization (`--grid`)
+Example structure:
+
+```text
+SDP-2026-1/
+├─ external/
+├─ results/
+├─ scripts/
+├─ src/
+├─ README.md
+└─ .gitignore
+```
 
 ---
 
-## 3. Requirements
+## 2. Environment setup
 
-The script will automatically try to install these packages if they are missing:
+Open a terminal in the repository root:
 
-- `numpy`
-- `matplotlib`
-- `pillow`
-- `tifffile`
-- `rasterio`
-- `imagecodecs`
-- `zstandard`
+```bash
+cd SDP-2026-1
+```
 
-### Recommended environment (Windows / VS Code)
+Activate the environment:
 
-1. Install **Python 3.9+**
-2. Inside the project folder, create a virtual environment:
+### Conda
+```bash
+conda activate allclear
+```
 
-   ```powershell
-   python -m venv .venv
-   .\.venv\Scripts\Activate.ps1
+If needed, install dependencies according to the AllClear project requirements inside `external/`.
 
-(Optional but recommended) Upgrade pip:
+---
 
-python -m pip install --upgrade pip
+## 3. Run a benchmark
 
+Benchmarks are run from the `external/` directory because `allclear` is imported as a Python module.
 
-You do not need to manually install the listed packages; the script will attempt to install them on the first run. But if you want to pre-install them:
+### Example: UnCRtainTS on CPU
 
-pip install numpy matplotlib pillow tifffile rasterio imagecodecs zstandard
+```bash
+cd external
+python -m allclear.benchmark ^
+  --dataset-fpath "metadata\datasets\test_on_dataset_root_EXISTING_DW.json" ^
+  --model-name uncrtaints ^
+  --device cpu ^
+  --main-sensor s2_toa ^
+  --aux-sensors s1 ^
+  --aux-data cld_shdw dw ^
+  --target-mode s2p ^
+  --tx 3 ^
+  --batch-size 1 ^
+  --num-workers 0 ^
+  --draw-vis 0 ^
+  --experiment-output-path "..\results\baseline" ^
+  --uc-baseline-base-path baselines\UnCRtainTS\model ^
+  --uc-weight-folder checkpoints ^
+  --uc-exp-name multitemporalL2
+```
 
-4. Dataset Structure
+### Output
 
-By default, the script expects a folder like:
+Results will be saved under a folder like:
 
-project_root/
-├─ visualize_allclear_universal.py
-├─ allclear_dataset/          # <-- default dataset folder
-│   ├─ tile_0001.tif
-│   ├─ tile_0002.tif
-│   ├─ ...
+```text
+results/baseline/<model_name>/<run_name>/AllClear/<dataset_name>/
+```
 
+Typical files include:
 
-Important notes:
+- `uncrtaints_predictions.pt`
+- `uncrtaints_metadata.csv`
+- `uncrtaints_lulc_metrics.csv`
+- `uncrtaints_aggregated_metrics.csv`
 
-The script recursively searches all subfolders under --data for .tif files.
+---
 
-You can point --data to any root folder containing .tif tiles; it does not have to be named allclear_dataset.
+## 4. Visualize predictions
 
-5. Usage
+Return to the repo root and run the visualization script.
 
-From the repository root, in a terminal (PowerShell on Windows):
+### Example
 
-python visualize_allclear_universal.py [OPTIONS]
+```bash
+cd ..
+python src\visualize_allclear.py ^
+  --run_dir "results\baseline\uncrtaints\multitemporalL2\AllClear\test_on_dataset_root_EXISTING_DW" ^
+  --json "external\metadata\datasets\test_on_dataset_root_EXISTING_DW.json" ^
+  --num 10
+```
 
-Command-line arguments
+### Output
 
---data PATH
-Path to the dataset folder (default: allclear_dataset).
+PNG panels will be saved in:
 
---start N
-1-based index of the first image to process (default: 1).
+```text
+<run_dir>/vis_json/
+```
 
---count K
-Number of images to process starting from --start (default: 10).
+Each panel includes:
 
---grid
-If set, show an on-screen grid preview (using matplotlib) instead of saving PNGs.
+- Input image
+- Prediction
+- Ground truth target
+- Absolute difference
+- Cloud/shadow mask
+- Dynamic World map
 
-Examples
-5.1. Basic: save first 10 tiles as PNGs
-python scripts/visualize_allclear_cli.py --data allclear_dataset --start 1 --count 10
+---
 
+## 5. Using helper `.cmd` files
 
-This will:
+If you use Windows helper scripts, place them in `scripts/`.
 
-Search allclear_dataset/ for .tif tiles
+### Run benchmark
+```bash
+scripts\run_benchmark.cmd
+```
 
-Process tiles 1–10 in sorted order
+### Run visualization
+```bash
+scripts\run_visualize.cmd
+```
 
-Save PNGs to:
+These scripts should be launched from the repository root.
 
-truecolor_previews_universal/
-    00001_<original_name>.png
-    00002_<original_name>.png
-    ...
+---
 
-5.2. Show a grid of previews (no files saved)
-python scripts/visualize_allclear_cli.py --data allclear_dataset --start 1 --count 12 --grid
+## 6. Important notes
 
+### Module path
+`benchmark.py` must be run from `external/`, not from `external/allclear/`, because it is executed as:
 
-Opens a matplotlib window with up to 3 columns and multiple rows
+```bash
+python -m allclear.benchmark
+```
 
-Shows image titles with the original .tif filenames
+### Outputs
+Do not save generated outputs inside `external/`, since it is a submodule.  
+All generated files should go into `results/`.
 
-Does not write PNGs to disk
+### Predictions
+During inference, the model sees the cloudy input image only.  
+The target image is used only for evaluation.
 
-5.3. Use a custom dataset path
-python scripts/visualize_allclear_cli.py --data D:\datasets\AllClear --start 50 --count 20
+---
 
-6. Output
+## 7. Common errors
 
-When not using --grid:
+### `No module named 'allclear'`
+Cause: running benchmark from the wrong directory.  
+Fix: run it from `external/`.
 
-PNGs are saved under:
+### `WinError 123`
+Cause: bad Windows path handling in output folder creation.  
+Fix: use `Path(...)` instead of splitting paths manually.
 
-<dataset_parent>/
-└─ truecolor_previews_universal/
-    ├─ 00001_tile_0001.png
-    ├─ 00002_tile_0002.png
-    └─ ...
+### OpenMP error
+If visualization crashes with an OpenMP duplication error, use:
 
+```bash
+set KMP_DUPLICATE_LIB_OK=TRUE
+```
 
-The script prints a line for each saved file:
+before running the script.
 
-✅ Saved: ...\truecolor_previews_universal\00001_tile_0001.png
+---
 
+## 8. Minimal workflow
 
-When using --grid:
+From repo root:
 
-No files are written.
+```bash
+conda activate allclear
+cd external
+python -m allclear.benchmark ...
+cd ..
+python src\visualize_allclear.py ...
+```
 
-A single grid window pops up, and the script reports how many images were shown.
+---
+
+## 9. Recommended helper script layout
+
+### `scripts/run_benchmark.cmd`
+```bat
+@echo off
+set KMP_DUPLICATE_LIB_OK=TRUE
+cd /d %~dp0..\external
+
+python -m allclear.benchmark ^
+  --dataset-fpath "metadata\datasets\test_on_dataset_root_EXISTING_DW.json" ^
+  --model-name uncrtaints ^
+  --device cpu ^
+  --main-sensor s2_toa ^
+  --aux-sensors s1 ^
+  --aux-data cld_shdw dw ^
+  --target-mode s2p ^
+  --tx 3 ^
+  --batch-size 1 ^
+  --num-workers 0 ^
+  --draw-vis 0 ^
+  --experiment-output-path "..\results\baseline" ^
+  --uc-baseline-base-path baselines\UnCRtainTS\model ^
+  --uc-weight-folder checkpoints ^
+  --uc-exp-name multitemporalL2
+
+pause
+```
+
+### `scripts/run_visualize.cmd`
+```bat
+@echo off
+set KMP_DUPLICATE_LIB_OK=TRUE
+cd /d %~dp0..
+
+python src\visualize_allclear.py ^
+  --run_dir "results\baseline\uncrtaints\multitemporalL2\AllClear\test_on_dataset_root_EXISTING_DW" ^
+  --json "external\metadata\datasets\test_on_dataset_root_EXISTING_DW.json" ^
+  --num 10
+
+pause
+```
+
+---
+
