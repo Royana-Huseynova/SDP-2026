@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Deep Learning Benchmark for Satellite Image Restoration and Generation</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="satellite-grid"></div>
+
+<nav>
+    <ul>
+        <li><a href="#intro">Introduction</a></li>
+        <li><a href="#team">Team</a></li>
+        <li><a href="#project">Project</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#resources">Resources</a></li>
+    </ul>
+</nav>
+
+<header class="hero">
+    <div class="hero-glow"></div>
+    <h2>Unified Deep Learning Benchmark<br>for Satellite Image Restoration and Generation</h2>
+</header>
+
+<section id="intro">
+    <h2>Introduction</h2>
+    <p>The project Unified Deep Learning Benchmark for Satellite Image Restoration and Generation focuses on developing a standardized and reproducible benchmarking framework for evaluating modern deep learning models used in satellite image processing. In current research, different datasets, preprocessing methods, and evaluation metrics are often used independently, making it difficult to fairly compare results across models and tasks.</p>
+    
+    <p>To address this limitation, the proposed system provides a unified evaluation pipeline that supports multiple satellite image processing tasks, including Cloud Removal (CR), Super-Resolution (SR), and High-Definition (HD) image generation. The framework integrates widely used remote sensing datasets such as AllClear, SEN12MS-CR-TS, WorldStrat, PROBA-V SR, and SAT25K, while applying consistent normalization, spectral alignment, and metric evaluation procedures.</p>
+    
+    <p>The goal of this project is to ensure fair comparison, reproducibility, and transparency in satellite image restoration and generation experiments by allowing different models to be tested under the same conditions. By combining dataset handling, model evaluation, metric computation, and visualization into a single system, the project provides a reliable tool for researchers working in remote sensing and deep learning.</p>
+    
+    <p>This unified benchmarking approach helps improve the consistency of experimental results and supports the development of more accurate and reliable satellite image processing methods.</p>
+</section>
+
+<section id="team">
+    <h2>Our Team</h2>
+    <div class="team-container">
+        <div class="member">
+            <h3>Royana Huseynova</h3>
+            <p class="role">Team Lead</p>
+            <p class="description">Project management and algorithm selection</p>
+            <div class="contact">
+                <a href="mailto:rhuseynova11270@ada.edu.az" title="Email">✉️</a>
+                <a href="https://www.linkedin.com/in/royana-huseynova-6a9ba0333/" target="_blank" title="LinkedIn">🔗</a>
+            </div>
+        </div>
+        <div class="member">
+            <h3>Nijat Alisoy</h3>
+            <p class="role">Dataset Integration</p>
+            <p class="description">Data preprocessing and normalization</p>
+            <div class="contact">
+                <a href="mailto:nalisoy17366@ada.edu.az" title="Email">✉️</a>
+                <a href="https://www.linkedin.com/in/nijat-alisoy-4776a4184/" target="_blank" title="LinkedIn">🔗</a>
+            </div>
+        </div>
+        <div class="member">
+            <h3>Pasha Zulfugarli</h3>
+            <p class="role">Data Analysis & Web UI</p>
+            <p class="description">Analytics and presentation website</p>
+            <div class="contact">
+                <a href="mailto:pzulfugarli13731@ada.edu.az" title="Email">✉️</a>
+                <a href="https://www.linkedin.com/in/pasa-zulfugarli/" target="_blank" title="LinkedIn">🔗</a>
+            </div>
+        </div>
+        <div class="member">
+            <h3>Huseyn Sadatkhanov</h3>
+            <p class="role">Visualization & Experiments</p>
+            <p class="description">Visualization and model comparison</p>
+            <div class="contact">
+                <a href="mailto:hsadatkhanov13770@ada.edu.az" title="Email">✉️</a>
+                <a href="https://www.linkedin.com/in/huseyn-sadatkhanov-0378181b4/" target="_blank" title="LinkedIn">🔗</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="project">
+    <h2>Project Overview</h2>
+    <p>The Unified Deep Learning Benchmark for Satellite Image Restoration and Generation is designed as a modular and extensible benchmarking framework that enables consistent evaluation of deep learning models across multiple satellite image processing tasks. The system integrates dataset handling, preprocessing, model execution, metric computation, visualization, and experiment logging into a single unified pipeline.</p>
+    
+    <p>The framework supports multiple public satellite datasets and ensures that all inputs are processed using the same normalization rules, spectral band alignment, and validation procedures. This guarantees that different models can be evaluated under identical conditions, eliminating inconsistencies caused by dataset-specific preprocessing or incompatible evaluation protocols.</p>
+    
+    <p>The benchmarking pipeline allows execution of baseline and custom deep learning models for cloud removal, super-resolution, and high-definition image generation, while automatically computing standardized evaluation metrics such as PSNR, SSIM, SAM, ERGAS, and other quality measures. All results are saved in structured formats, enabling reproducible experiments and reliable comparison between models, datasets, and preprocessing settings.</p>
+    
+    <p>In addition to quantitative evaluation, the system provides visual comparison tools that display input images, model outputs, and reference images side-by-side, along with difference maps and zoomed regions for detailed analysis. Experiment configurations, dataset versions, and evaluation parameters are recorded automatically to ensure transparency and repeatability of results.</p>
+    
+    <p>By combining these components into a single unified environment, the project provides a practical and research-oriented benchmarking solution that simplifies satellite image evaluation workflows and supports more consistent and scientifically reliable experimentation.</p>
+</section>
+
+<section id="results">
+    <h2>Results</h2>
+    <div class="results-showcase">
+        <div class="result-image-container">
+            <img src="assets/sample1.png" alt="Sample 1 - Cloud Removal Results" class="clickable-image">
+        </div>
+        <div class="result-image-container">
+            <img src="assets/sample2.png" alt="Sample 2 - Satellite Image Processing" class="clickable-image">
+        </div>
+    </div>
+</section>
+
+<!-- Image Modal Lightbox -->
+<div id="imageModal" class="modal">
+    <span class="close-btn">&times;</span>
+    <img class="modal-image" src="" alt="">
+</div>
+
+<section id="resources">
+    <h2>Project Resources</h2>
+    <p class="resources-intro">This section contains the main materials related to the project, including the final report, source code, datasets, system diagrams, and external tools used during development. All resources are provided to support transparency, reproducibility, and clear understanding of the benchmarking framework.</p>
+    <div class="resources-grid">
+
+        <div class="resource-card">
+            <div class="resource-icon">💻</div>
+            <h3>GitHub Repository</h3>
+            <p>Source code of the unified benchmarking framework, including dataset loaders, evaluation pipeline, and visualization tools.</p>
+            <a href="https://github.com/Royana-Huseynova/SDP-2026" class="resource-btn" target="_blank">Open</a>
+        </div>
+
+
+    </div>
+
+    <div class="datasets-section">
+        <h3>Datasets Used in Benchmark</h3>
+        <p class="datasets-intro">Our framework integrates the following public satellite datasets for comprehensive evaluation across different tasks and image types.</p>
+        <div class="datasets-grid">
+            <div class="dataset-card">
+                <h4>AllClear</h4>
+                <p>Cloud removal dataset with paired cloudy and cloud-free satellite images for evaluating cloud removal algorithms.</p>
+            </div>
+            <div class="dataset-card">
+                <h4>SEN12MS-CR-TS</h4>
+                <p>Sentinel-2 multi-spectral cloud removal time series dataset for temporal consistency evaluation.</p>
+            </div>
+            <div class="dataset-card">
+                <h4>WorldStrat</h4>
+                <p>Global stratified satellite imagery dataset for diverse geographic and seasonal representation.</p>
+            </div>
+            <div class="dataset-card">
+                <h4>PROBA-V SR</h4>
+                <p>Super-resolution dataset from PROBA-V satellite for evaluating high-resolution image generation.</p>
+            </div>
+            <div class="dataset-card">
+                <h4>SAT25K</h4>
+                <p>Large-scale satellite image dataset with diverse resolutions and processing tasks.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="papers">
+    <h2>Project Papers</h2>
+    <div class="papers-grid">
+        <div class="paper-card">
+            <div class="paper-icon">📄</div>
+            <h3>Research Report</h3>
+            <p class="paper-semester">Semester 1</p>
+            <a href="https://docs.google.com/document/d/1QmQ_U5gRzTdU83ulaYwgJEiQnqcgDfBYls9Z_TkG8es/edit?usp=sharing" class="paper-btn" target="_blank">View</a>
+        </div>
+        <div class="paper-card">
+            <div class="paper-icon">📋</div>
+            <h3>User Design</h3>
+            <p class="paper-semester">Semester 1</p>
+            <a href="https://adauniversity-my.sharepoint.com/:w:/g/personal/pzulfugarli13731_ada_edu_az/IQAODWfw7tywRLyXu-NXvFvKAU8N-GvY57BpAe51bUCOH_o?e=0wGjZ4" class="paper-btn" target="_blank">View</a>
+        </div>
+        <div class="paper-card">
+            <div class="paper-icon">📑</div>
+            <h3>Final Report</h3>
+            <p class="paper-semester">Semester 1</p>
+            <a href="https://adauniversity-my.sharepoint.com/:w:/g/personal/pzulfugarli13731_ada_edu_az/IQCZk6BH134_T6xg8ISFJE0AAZ-IYqUOEUM3va0RfHAnBek?e=t6INlX" class="paper-btn" target="_blank">View</a>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <p>&copy; 2026 ADA University. All rights reserved.</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+
+</html>
