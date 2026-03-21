@@ -168,7 +168,7 @@ def main():
 
         fig.suptitle(subtitle, fontsize=11)
 
-        out_path = out_dir / f"sample_{i:04d}.png"
+        out_path = out_dir / f"{it['roi'][0]}_{i:04d}.png"
         fig.tight_layout()
         fig.savefig(out_path, dpi=150)
         plt.close(fig)
