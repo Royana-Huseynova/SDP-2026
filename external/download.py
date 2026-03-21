@@ -1,3 +1,5 @@
+from importlib.resources import path
+
 import requests
 from pathlib import Path
 import multiprocessing as mp
@@ -142,35 +144,61 @@ def download_roi_worker(roi_batch):
         else:
             print(f"Skipping {filename} - not found on server")
 
+def load_roi_file(path):
+    with open(path, 'r', encoding='utf-8') as f:
+      return [line.strip() for line in f if line.strip()]   
+
 def main():
     # Add argument parser
     parser = argparse.ArgumentParser(description='Download dataset with configurable CPU cores')
     parser.add_argument('--cpus', type=int, default=8,
-                       help='Number of CPU cores to use (default: 8)')
+                    help='Number of CPU cores to use (default: 8)')
+    parser.add_argument('--rois', nargs='*', default=None,
+                    help='Specific ROI IDs to download, e.g. roi4119 roi4582')
+    parser.add_argument('--roi-file', type=str, default=None,
+                    help='Path to a text file containing ROI IDs, one per line')
+    parser.add_argument('--skip-metadata', action='store_true',
+                   help='Skip downloading metadata.tar.gz')
     args = parser.parse_args()
     
     # Calculate N_CORES using args.cpus
     n_cores = max(1, args.cpus - 1)  # Leave one core free
     
     # Download metadata files
-    print("Downloading metadata files...")
-    download_metadata()
+    if args.skip_metadata:
+        print("Skipping metadata download")
+    else:
+        print("Downloading metadata files...")
+        download_metadata()
     
     # Load ROI IDs
-    print("\nLoading ROI IDs from metadata...")
-    roi_ids = load_roi_list()
-    print(f"Found {len(roi_ids)} unique ROI IDs")
-    
-    # Split ROIs into chunks for parallel processing
+    if args.roi_file:
+        print(f"\nLoading ROI IDs from file: {args.roi_file}")
+        roi_ids = load_roi_file(args.roi_file)
+    elif args.rois:
+        print("\nUsing ROI IDs provided in command line")
+        roi_ids = args.rois
+    else:
+        print("\nLoading ROI IDs from metadata...")
+        roi_ids = load_roi_list()
+
+    print(f"Found {len(roi_ids)} ROI IDs to download")
+
+    if not roi_ids:
+        print("No ROI IDs found. Exiting.")
+        return
+
     chunk_size = len(roi_ids) // n_cores + 1
     roi_chunks = [roi_ids[i:i + chunk_size] for i in range(0, len(roi_ids), chunk_size)]
-    
+
     # Download ROIs in parallel
     print(f"\nDownloading ROIs using {n_cores} processes...")
     with mp.Pool(n_cores) as pool:
         pool.map(download_roi_worker, roi_chunks)
     
     print("\nDownload completed!")
+    
+    
 
 if __name__ == "__main__":
     main()
