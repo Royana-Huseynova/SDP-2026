@@ -227,10 +227,10 @@ python src\visualize_allclear.py ...
 ```bat
 @echo off
 set KMP_DUPLICATE_LIB_OK=TRUE
-cd /d %~dp0..\external
+cd /d %~dp0external
 
 python -m allclear.benchmark ^
-  --dataset-fpath "metadata\datasets\test_on_dataset_root_EXISTING_DW.json" ^
+  --dataset-fpath "%~dp0..\external\metadata\datasets\test_tx3_s2-s1_100pct_1proi_LOCAL_READY.json" ^
   --model-name uncrtaints ^
   --device cpu ^
   --main-sensor s2_toa ^
@@ -241,10 +241,10 @@ python -m allclear.benchmark ^
   --batch-size 1 ^
   --num-workers 0 ^
   --draw-vis 0 ^
-  --experiment-output-path "..\results\baseline" ^
+  --experiment-output-path "%~dp0..\results\baseline\uncrtaints" ^
   --uc-baseline-base-path baselines\UnCRtainTS\model ^
   --uc-weight-folder checkpoints ^
-  --uc-exp-name multitemporalL2
+  --uc-exp-name noSAR_1 ^
 
 pause
 ```
