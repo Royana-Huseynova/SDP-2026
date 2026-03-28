@@ -206,10 +206,54 @@ nav a:focus::after {
   box-shadow: 0 14px 26px rgba(0, 188, 212, 0.45);
 }
 
+/* Scroll-triggered animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 section {
   padding: 90px 8vw;
   max-width: 1300px;
   margin: 0 auto;
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+section.visible {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+section:not(.visible) {
+  opacity: 0;
 }
 
 section h2 {
