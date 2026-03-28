@@ -1,6 +1,6 @@
 # UnifiedSatAI Website
 
-A professional website showcasing the **Unified Deep Learning Benchmark for Satellite Imaging** project, presenting research on satellite image restoration, classification, and evaluation using multiple datasets.
+A website showcasing the **Unified Deep Learning Benchmark for Satellite Imaging** project, presenting research on satellite image restoration, classification, and evaluation using multiple datasets.
 
 ---
 
