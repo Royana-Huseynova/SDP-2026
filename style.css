@@ -543,72 +543,39 @@ section li {
 
 .dataset-card {
   background: rgba(5, 25, 47, 0.8);
-  border: 2px solid var(--accent-color);
-  border-radius: 14px;
-  padding: 32px 24px;
+  border: 1.5px solid rgba(79, 195, 247, 0.3);
+  border-radius: 12px;
+  padding: 28px 24px;
   text-align: center;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), 0 0 30px rgba(79, 195, 247, 0.05);
-  position: relative;
-  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 280px;
-}
-
-.dataset-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, var(--accent-color), transparent);
-  opacity: 0;
-  transition: opacity 0.35s ease;
-  pointer-events: none;
+  min-height: 240px;
 }
 
 .dataset-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  border-color: var(--accent-color);
-  box-shadow: 0 12px 40px rgba(0, 188, 212, 0.3), 0 0 60px var(--accent-color);
-  background: rgba(5, 25, 47, 0.95);
-}
-
-.dataset-card:hover::before {
-  opacity: 0.08;
-}
-
-.dataset-icon {
-  font-size: 3rem;
-  margin-bottom: 12px;
-  display: block;
-  transition: transform 0.35s ease;
-  filter: drop-shadow(0 0 8px var(--accent-color));
-}
-
-.dataset-card:hover .dataset-icon {
-  transform: scale(1.15) rotateY(10deg);
+  transform: translateY(-6px);
+  border-color: rgba(79, 195, 247, 0.6);
+  box-shadow: 0 10px 28px rgba(0, 188, 212, 0.2);
+  background: rgba(5, 25, 47, 0.9);
 }
 
 .dataset-card h4 {
-  margin: 8px 0 14px 0;
-  color: var(--accent-color);
-  font-size: 1.25rem;
+  margin: 0 0 12px 0;
+  color: #4fbeff;
+  font-size: 1.15rem;
   font-weight: 700;
-  letter-spacing: 0.3px;
-  position: relative;
-  z-index: 1;
-  text-shadow: 0 2px 8px rgba(0, 188, 212, 0.2);
+  letter-spacing: 0.2px;
 }
 
 .dataset-card p {
   margin: 0;
-  color: #b8d8ff;
+  color: #a8d8ff;
   font-size: 0.9rem;
   line-height: 1.6;
-  position: relative;
-  z-index: 1;
 }
 
 .papers-intro {
