@@ -525,6 +525,7 @@ section li {
   gap: 28px;
   max-width: 1050px;
   margin: 0 auto;
+  justify-content: center;
 }
 
 @media (max-width: 1024px) {
