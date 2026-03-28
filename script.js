@@ -59,3 +59,23 @@ document.addEventListener('keydown', function(event) {
     closeModal();
   }
 });
+
+// Parallax Scrolling Effect
+const parallaxLayers = document.querySelectorAll('.parallax-layer');
+const floatingOrbs = document.querySelector('.floating-orbs');
+
+window.addEventListener('scroll', () => {
+  const scrollPos = window.scrollY;
+  
+  // Parallax effect for sections
+  parallaxLayers.forEach((layer, index) => {
+    const speed = 0.5 + (index * 0.1); // Different speed for each layer
+    layer.style.transform = `translateY(${scrollPos * speed * 0.3}px)`;
+  });
+  
+  // Parallax effect for floating orbs
+  if (floatingOrbs) {
+    floatingOrbs.style.transform = `translateY(${scrollPos * 0.4}px)`;
+  }
+});
+
