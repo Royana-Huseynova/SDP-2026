@@ -3,7 +3,7 @@ set KMP_DUPLICATE_LIB_OK=TRUE
 cd /d %~dp0external
 
 python -m allclear.benchmark ^
-  --dataset-fpath "%~dp0..\external\metadata\datasets\test_tx3_s2-s1_100pct_1proi_LOCAL_READY.json" ^
+  --dataset-fpath "%~dp0..\external\metadata\datasets\test_tx3_s2-s1_100pct_1proi_local.json" ^
   --model-name uncrtaints ^
   --device cpu ^
   --main-sensor s2_toa ^
@@ -17,7 +17,6 @@ python -m allclear.benchmark ^
   --experiment-output-path "%~dp0..\results\baseline\uncrtaints" ^
   --uc-baseline-base-path baselines\UnCRtainTS\model ^
   --uc-weight-folder checkpoints ^
-  --uc-exp-name noSAR_1 ^
-  --selected-rois roi38068 roi782676 roi321568
+  --uc-exp-name noSAR_1 
 
 pause
