@@ -82,7 +82,7 @@ Benchmarks are run from the `external/` directory because `allclear` is imported
 ```bash
 cd external
 python -m allclear.benchmark ^
-  --dataset-fpath "metadata\datasets\test_on_dataset_root_EXISTING_DW.json" ^
+  --dataset-fpath "metadata\datasets\test_tx3_s2-s1_100pct_1proi_local.json" ^
   --model-name uncrtaints ^
   --device cpu ^
   --main-sensor s2_toa ^
@@ -125,8 +125,8 @@ Return to the repo root and run the visualization script.
 ```bash
 cd ..
 python src\visualize_allclear.py ^
-  --run_dir "results\baseline\uncrtaints\multitemporalL2\AllClear\test_on_dataset_root_EXISTING_DW" ^
-  --json "external\metadata\datasets\test_on_dataset_root_EXISTING_DW.json" ^
+  --run_dir "results\baseline\uncrtaints\multitemporalL2\AllClear\test_tx3_s2-s1_100pct_1proi_local.json" ^
+  --json "external\metadata\datasets\test_tx3_s2-s1_100pct_1proi_local.json" ^
   --num 10
 ```
 
@@ -230,7 +230,7 @@ set KMP_DUPLICATE_LIB_OK=TRUE
 cd /d %~dp0external
 
 python -m allclear.benchmark ^
-  --dataset-fpath "%~dp0..\external\metadata\datasets\test_tx3_s2-s1_100pct_1proi_LOCAL_READY.json" ^
+  --dataset-fpath "%~dp0..\external\metadata\datasets\test_tx3_s2-s1_100pct_1proi_local.json" ^
   --model-name uncrtaints ^
   --device cpu ^
   --main-sensor s2_toa ^
@@ -256,8 +256,8 @@ set KMP_DUPLICATE_LIB_OK=TRUE
 cd /d %~dp0..
 
 python src\visualize_allclear.py ^
-  --run_dir "results\baseline\uncrtaints\multitemporalL2\AllClear\test_on_dataset_root_EXISTING_DW" ^
-  --json "external\metadata\datasets\test_on_dataset_root_EXISTING_DW.json" ^
+  --run_dir "results\baseline\uncrtaints\multitemporalL2\AllClear\test_tx3_s2-s1_100pct_1proi_local" ^
+  --json "external\metadata\datasets\test_tx3_s2-s1_100pct_1proi_local.json" ^
   --num 10
 
 pause

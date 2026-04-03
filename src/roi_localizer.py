@@ -6,7 +6,7 @@ from pathlib import Path
 # CONFIG
 # =========================
 SRC_JSON = Path(r"C:\Users\User\Desktop\SDP\allclear_test_proi1_v1\SDP-2026-1\external\metadata\datasets\test_tx3_s2-s1_100pct_1proi.json")
-DST_JSON = Path(r"C:\Users\User\Desktop\SDP\allclear_test_proi1_v1\SDP-2026-1\external\metadata\datasets\test_tx3_s2-s1_100pct_1proi_LOCAL_READY.json")
+DST_JSON = Path(r"C:\Users\User\Desktop\SDP\allclear_test_proi1_v1\SDP-2026-1\external\metadata\datasets\test_tx3_s2-s1_100pct_1proi_local.json")
 
 # Folder that contains roi folders
 LOCAL_DATA_ROOT = Path(r"C:\Users\User\Desktop\SDP\allclear_test_proi1_v1\SDP-2026-1\external\dataset")
