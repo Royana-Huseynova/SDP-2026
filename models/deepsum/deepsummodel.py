@@ -78,7 +78,7 @@ def compute_fill_coeff(masks: np.ndarray) -> np.ndarray:
 
 class DeepSUMModel:
     def __init__(self,
-                 checkpoint_dir: str = "benchmark/checkpoints/DeepSUM_NIR_lr_5e-06_bsize_8",
+                 checkpoint_dir: str = "models/deepsum/checkpoints/DeepSUM_NIR_lr_5e-06_bsize_8",
                  t_in: int = None,
                  upscale: int = 3,
                  mu: float = None,
@@ -197,7 +197,7 @@ class DeepSUMModel:
 
 
 if __name__ == "__main__":
-    checkpoint_dir = "benchmark/checkpoints/DeepSUM_NIR_lr_5e-06_bsize_8"
+    checkpoint_dir = "models/deepsum/checkpoints/DeepSUM_NIR_lr_5e-06_bsize_8"
 
     print("=" * 60)
     print("DeepSUM Model — Quick Test")

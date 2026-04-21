@@ -17,9 +17,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-from .io import highres_image, lowres_image_iterator, all_scenes_paths
-from .aggregate import baseline_upscale, central_tendency
-from .transform import bicubic_upscaling
+from data.io import highres_image, lowres_image_iterator, all_scenes_paths
+from evaluation.aggregate import baseline_upscale, central_tendency
+from data.transforms import bicubic_upscaling
 
 
 def run_scene(scene_path: str, save_dir: str = None, show: bool = False) -> dict:

@@ -1,5 +1,4 @@
 """
-metrics.py
 ──────────
 Evaluation metrics for super-resolution on Proba-V dataset.
 All metrics take model OUTPUT (SR) and ground truth (HR) as inputs.

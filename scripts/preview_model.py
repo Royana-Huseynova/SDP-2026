@@ -1,7 +1,7 @@
 import os, numpy as np, matplotlib.pyplot as plt
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from data.probav import ProbaVDataset
-from models.deepsum.model import DeepSUMModel
+from models.deepsum.deepsummodel import DeepSUMModel
 
 ds = ProbaVDataset('/Users/royana/Desktop/probav_data/train', channel='NIR')
 lr_stack, hr, masks, name = ds[0]
