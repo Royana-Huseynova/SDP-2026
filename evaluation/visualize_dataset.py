@@ -27,15 +27,15 @@ from matplotlib.cm import ScalarMappable
 # Adjust the import path to match your project structure.
 # If running from the project root: `python -m benchmark.visualize_dataset`
 try:
-    from .dataset import ProbaVDataset
+    from data.probav import ProbaVDataset
     from data.io import highres_image, lowres_image_iterator
 except ImportError:
     # Fallback: running as a standalone script
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     try:
-        from dataset import ProbaVDataset
-        from io import highres_image, lowres_image_iterator
+        from data.probav import ProbaVDataset
+        from data.io import highres_image, lowres_image_iterator
     except ImportError:
         raise ImportError(
             "Could not import dataset/io modules. "

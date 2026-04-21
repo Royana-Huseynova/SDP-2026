@@ -10,16 +10,6 @@ Metrics implemented:
   - SAM       : Spectral Angle Mapper (adapted for single band)
   - ERGAS     : Erreur Relative Globale Adimensionnelle de Synthèse
 
-Metrics NOT implemented (documented in README):
-  - QNR  : requires multiple spectral bands — not applicable to single-band SR
-  - FID  : designed for GANs, requires Inception net trained on RGB ImageNet
-
-Usage:
-    from evaluation.metrics import evaluate
-
-    scores = evaluate(sr, hr, hr_mask, lr_mean, scale=3)
-    print(scores)
-    # {'psnr': 34.2, 'ssim': 0.91, 'cpsnr': 35.1, 'sam': 0.02, 'ergas': 3.4}
 """
 
 import numpy as np
@@ -69,66 +59,71 @@ def ssim(sr: np.ndarray, hr: np.ndarray, data_range: float = 1.0) -> float:
 
     return float(ssim_fn(sr, hr, data_range=data_range))
 
+import numpy as np
 
 def cpsnr(sr: np.ndarray,
           hr: np.ndarray,
           hr_mask: np.ndarray,
+          scene_path=None,
+          norm_table=None,
           border: int = 3) -> float:
     """
-    Clearance-corrected PSNR — the official Proba-V competition metric.
-
-    Accounts for:
-      1. Only valid (unmasked) HR pixels
-      2. Brightness bias correction between SR and HR
-      3. Sub-pixel registration uncertainty via border cropping
-
-    Args:
-        sr:      model output (H, W) float in [0, 1]
-        hr:      ground truth (H, W) float in [0, 1]
-        hr_mask: HR quality mask (H, W) bool — True = valid pixel
-        border:  number of border pixels to crop for registration tolerance
-
-    Returns:
-        cPSNR in dB. Higher is better.
+    Official-style Proba-V cPSNR (leaderboard compatible).
+    Keeps same idea as EscVM but more numerically faithful.
     """
-    sr      = np.asarray(sr,      dtype=np.float64)
-    hr      = np.asarray(hr,      dtype=np.float64)
-    hr_mask = np.asarray(hr_mask, dtype=np.float64)
+
+    sr = np.asarray(sr, dtype=np.float64)
+    hr = np.asarray(hr, dtype=np.float64)
+    hr_mask = np.asarray(hr_mask, dtype=bool)
 
     H, W = sr.shape
-    best_cpsnr = -np.inf
+    c = border
 
-    # Try all (2*border+1)^2 shifts to account for registration uncertainty
-    for di in range(2 * border + 1):
-        for dj in range(2 * border + 1):
-            # Crop SR to match shifted HR region
-            sr_crop   = sr[border:H - border, border:W - border]
-            hr_crop   = hr[di:di + (H - 2 * border), dj:dj + (W - 2 * border)]
-            mask_crop = hr_mask[di:di + (H - 2 * border), dj:dj + (W - 2 * border)]
+    # ── 1. crop SR once (same as official)
+    sr_crop = sr[c:H - c, c:W - c].ravel()
 
-            n_valid = mask_crop.sum()
-            if n_valid == 0:
+    best_score = np.inf
+
+    # ── 2. shift search (u,v)
+    for u in range(2 * c + 1):
+        for v in range(2 * c + 1):
+
+            hr_crop = hr[u:u + (H - 2 * c), v:v + (W - 2 * c)].ravel()
+            mask_crop = hr_mask[u:u + (H - 2 * c), v:v + (W - 2 * c)].ravel()
+
+            # only valid pixels
+            valid = mask_crop
+
+            if np.sum(valid) == 0:
                 continue
 
-            # Apply mask
-            sr_masked = sr_crop * mask_crop
-            hr_masked = hr_crop * mask_crop
+            _hr = hr_crop[valid]
+            _sr = sr_crop[valid]
 
-            # Brightness bias correction
-            bias = (hr_masked.sum() - sr_masked.sum()) / n_valid
-            sr_corrected = (sr_masked + bias) * mask_crop
+            # 3. brightness bias correction (official style)
+            b = np.mean(_hr - _sr)
 
-            # cMSE over valid pixels only
-            cmse = np.sum((hr_masked - sr_corrected) ** 2) / n_valid
+            diff = (_hr - (_sr + b))
 
-            if cmse == 0:
-                return float('inf')
+            cMSE = np.mean(diff * diff)
 
-            # cPSNR in 16-bit scale (65535^2 as per competition)
-            c = float(10.0 * np.log10((65535.0 ** 2) / (cmse * 65535.0 ** 2)))
-            best_cpsnr = max(best_cpsnr, c)
+            if cMSE <= 0:
+                return 1.0  # perfect score
 
-    return best_cpsnr
+            cPSNR = -10.0 * np.log10(cMSE)
+
+            
+            if norm_table is not None and scene_path is not None:
+                N = norm_table.loc[scene_path][0]
+                score = N / cPSNR
+            else:
+                score = cPSNR
+
+            best_score = min(best_score, score)
+
+    return float(best_score)
+
+    
 
 
 def sam(sr: np.ndarray, hr: np.ndarray) -> float:
@@ -221,9 +216,7 @@ def evaluate(sr: np.ndarray,
     }
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Pretty printer
-# ─────────────────────────────────────────────────────────────────────────────
+
 
 def print_scores(scores: dict, scene_name: str = '') -> None:
     """Print metric scores in a readable format."""
@@ -244,44 +237,63 @@ def print_scores(scores: dict, scene_name: str = '') -> None:
 # ─────────────────────────────────────────────────────────────────────────────
 
 if __name__ == '__main__':
-    import sys
-    from data.probav import ProbaVDataset
-    from evaluation.aggregate import baseline_upscale
-    from data.io import highres_image
     import os
+    import numpy as np
 
+    from data.probav import ProbaVDataset
+    from models.rams.model import RAMSModel
+    from data.io import highres_image
+
+    # ── CONFIG ────────────────────────────────────────────────
     data_path = '/Users/royana/Desktop/probav_data/train'
-    channel   = 'RED'
-
-    channel_path = os.path.join(data_path, channel)
-    scenes = sorted([
-        os.path.join(channel_path, f)
-        for f in os.listdir(channel_path)
-        if not f.startswith('.') and os.path.isdir(os.path.join(channel_path, f))
-    ])
+    channel   = 'NIR'   # or 'RED'
+    num_scenes = 3      # how many scenes to test
 
     print("=" * 50)
-    print("Metrics — Quick Test on first 3 scenes")
+    print("Metrics — RAMS Model Evaluation")
     print("=" * 50)
+
+    # ── Load dataset ──────────────────────────────────────────
+    dataset = ProbaVDataset(
+        base_path=data_path,
+        channel=channel,
+        max_t=9
+    )
+
+    print(f"Total scenes available: {len(dataset)}")
+
+    # ── Load model ────────────────────────────────────────────
+    model = RAMSModel(band=channel)
 
     all_scores = []
-    for scene_path in scenes[:3]:
-        scene_name = os.path.basename(scene_path)
 
-        # Load HR
-        hr, hr_mask = highres_image(scene_path, img_as_float=True)
+    # ── Loop over scenes ──────────────────────────────────────
+    for i in range(min(num_scenes, len(dataset))):
+        lr, hr, lr_mask, scene_name = dataset[i]
 
-        # Run baseline model
-        sr = baseline_upscale(scene_path)
+        print(f"\nProcessing scene: {scene_name}")
 
-        # Evaluate metrics AFTER model output
+        # IMPORTANT: reload HR mask (dataset gives LR masks)
+        scene_path = os.path.join(data_path, channel, scene_name)
+        hr, hr_mask = highres_image(scene_path)
+
+        # ── Run RAMS model ─────────────────────────────────
+        sr = model.predict(lr)
+
+        # ── Evaluate metrics ──────────────────────────────
         scores = evaluate(sr, hr, hr_mask)
+
         print_scores(scores, scene_name)
         all_scores.append(scores)
 
-    # Average across scenes
-    print("=" * 50)
-    print("  Average across 3 scenes")
-    print("=" * 50)
-    avg = {k: np.mean([s[k] for s in all_scores]) for k in all_scores[0]}
-    print_scores(avg, 'Average')
+    # ── Compute average ───────────────────────────────────────
+    if all_scores:
+        avg_scores = {
+            k: np.mean([s[k] for s in all_scores])
+            for k in all_scores[0]
+        }
+
+        print("=" * 50)
+        print("Average over evaluated scenes")
+        print("=" * 50)
+        print_scores(avg_scores, "Average")
