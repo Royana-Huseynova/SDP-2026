@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from torch.utils.data import Dataset
-from .io import highres_image, lowres_image_iterator
+from data.io import highres_image, lowres_image_iterator
 
 
 class ProbaVDataset(Dataset):

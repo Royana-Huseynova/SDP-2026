@@ -1,0 +1,13 @@
+# Core ML
+tensorflow==2.13.0
+numpy
+
+# Image processing
+scikit-image
+Pillow
+
+# Visualization
+matplotlib
+
+# Utilities
+tqdm

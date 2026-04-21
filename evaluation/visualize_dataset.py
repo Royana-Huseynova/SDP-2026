@@ -1,6 +1,4 @@
 """
-visualize_dataset.py
-────────────────────
 Visualize raw Proba-V dataset BEFORE any model is involved.
 
 What it shows per scene:
@@ -30,7 +28,7 @@ from matplotlib.cm import ScalarMappable
 # If running from the project root: `python -m benchmark.visualize_dataset`
 try:
     from .dataset import ProbaVDataset
-    from .io import highres_image, lowres_image_iterator
+    from data.io import highres_image, lowres_image_iterator
 except ImportError:
     # Fallback: running as a standalone script
     import sys

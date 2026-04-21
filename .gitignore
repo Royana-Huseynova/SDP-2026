@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environments
+.env
+.venv
+env/
+venv/
+*.env
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Model checkpoints & large binary files
+benchmark/checkpoints/
+*.ckpt
+*.ckpt.*
+*.meta
+*.index
+*.data-00000-of-00001
+
+# Dataset (keep out of git — too large)
+probav_data/
+dataset/
+*.tif
+*.tiff
+
+# Output images (generated, not source)
+baseline_outputs/
+dataset_previews/
+model_output_preview.png
+outputs/
+*.png
+*.jpg
+*.jpeg
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Logs & TensorBoard
+logs/
+runs/
+tensorboard/
+*.log
+
+# Misc
+*.swp
+*.swo
+Thumbs.db
