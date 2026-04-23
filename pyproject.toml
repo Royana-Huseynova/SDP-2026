@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdp-2026"
+version = "0.1.0"
+description = "Unified API for satellite data processing — AllClear cloud removal + Proba-V super-resolution."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "SDP-2026 contributors" }]
+dependencies = [
+    "numpy>=1.24,<2.0",
+    "pandas>=2.0",
+    "matplotlib>=3.7",
+    "tqdm>=4.65",
+    "rasterio>=1.3",
+    "Pillow>=10.0",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+torch = ["torch>=2.1", "torchvision>=0.16"]
+metrics = ["pyiqa>=0.1.10", "torchmetrics>=1.2", "lpips>=0.1.4"]
+dev = ["pytest>=7.4", "pytest-cov>=4.1"]
+
+[project.scripts]
+sdp = "sdp.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["sdp*"]
+exclude = ["external*", "results*", "scripts*", "notebooks*", "src*"]

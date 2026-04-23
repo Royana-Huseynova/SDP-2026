@@ -1,0 +1,48 @@
+name: sdp-2026
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+
+dependencies:
+  # --- Core ---------------------------------------------------------------
+  - python=3.10
+  - pip
+
+  # --- PyTorch (CUDA 11.8) ------------------------------------------------
+  # If you only have CPU, remove pytorch-cuda and replace with cpuonly.
+  - pytorch=2.1.*
+  - torchvision=0.16.*
+  - torchaudio=2.1.*
+  - pytorch-cuda=11.8
+
+  # --- Scientific stack ---------------------------------------------------
+  - numpy>=1.24,<2.0
+  - scipy
+  - pandas
+  - matplotlib
+  - scikit-learn
+  - scikit-image
+  - tqdm
+  - pillow
+  - pyyaml
+  - opencv
+
+  # --- Geospatial / raster ------------------------------------------------
+  - rasterio
+  - gdal
+  - pyproj
+  - shapely
+  - fiona
+  - geopandas
+  - rioxarray
+
+  # --- Jupyter / dev ------------------------------------------------------
+  - jupyterlab
+  - ipykernel
+  - notebook
+
+  # --- Pip-only packages --------------------------------------------------
+  - pip:
+      - -r requirements.txt
