@@ -213,5 +213,8 @@ allclear_dataset
 #results
 results
 
+*.zip
+*.rar
+
 #dataset
 dataset
