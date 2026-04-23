@@ -13,8 +13,8 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Optional
-import config
-from datasets import DatasetHandle
+from . import config
+from .datasets import DatasetHandle
 
 
 def visualize(

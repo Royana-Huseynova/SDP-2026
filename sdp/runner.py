@@ -17,8 +17,8 @@ import sys
 from pathlib import Path
 from typing import Any, Optional
 
-import config
-from datasets import DatasetHandle
+from . import config
+from .datasets import DatasetHandle
 
 
 # --------------------------------------------------------------------- #

@@ -9,11 +9,11 @@ from __future__ import annotations
 
 from typing import Any
 
-import config
-from datasets import load_dataset, DatasetHandle
-from runner import train, inference
-from visualize import visualize
-from metrics import metrics
+from . import config
+from .datasets import load_dataset, DatasetHandle
+from .runner import train, inference
+from .visualize import visualize
+from .metrics import metrics
 
 
 def set_data_path(path: str) -> str:
