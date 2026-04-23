@@ -1,3 +1,6 @@
 [submodule "external/allclear"]
 	path = external/allclear
 	url = https://github.com/Zhou-Hangyu/allclear
+[submodule "probav"]
+	path = probav
+	url = https://github.com/Royana-Huseynova/SDP-2026.git
