@@ -52,7 +52,7 @@ Examples
 --------
   # 1) Inspect what's supported
   python -m sdp describe
-  python -m sdp describe allclear
+  python -m sdp describe probav
 
   # 2) Set a default data path
   python -m sdp set-data-path D:\\satellite\\data
@@ -66,19 +66,44 @@ Examples
       --aux-sensors s1 \\
       --aux-data cld_shdw dw
 
-  # 4) Visualize the run
+  # 4) Run Proba-V baseline (median composite + bicubic upsample)
+  python -m sdp benchmark \\
+      --dataset probav \\
+      --variant probav_baseline \\
+      --type super_resolution \\
+      --data-path D:\\satellite\\data \\
+      --split train --band NIR
+
+  # 5) Visualize an AllClear run
   python -m sdp visualize \\
       --run-dir results/baseline/uncrtaints/utae/AllClear/test_tx3_s2-s1_100pct_1proi_local \\
       --json   external/metadata/datasets/test_tx3_s2-s1_100pct_1proi_local.json \\
       --model  uncrtaints --num 100
 
-  # 5) Compute metrics
+  # 6) Visualize a Proba-V run
+  python -m sdp visualize \\
+      --dataset probav \\
+      --run-dir results/probav/probav_baseline \\
+      --data-path D:\\satellite\\data --split train --band NIR --num 10
+
+  # 7) Compute AllClear metrics
   python -m sdp metrics --run-dir <run_dir> --json <json> --model uncrtaints
 
-  # 6) End-to-end pipeline
+  # 8) Compute Proba-V metrics (cPSNR / RMSE / SSIM)
+  python -m sdp metrics \\
+      --dataset probav \\
+      --run-dir results/probav/probav_baseline \\
+      --data-path D:\\satellite\\data --split train --band NIR
+
+  # 9) End-to-end AllClear pipeline
   python -m sdp pipeline \\
       --dataset allclear --variant uncrtaints --device cpu \\
       --dataset-fpath external/metadata/datasets/test_tx3_s2-s1_100pct_1proi_local.json
+
+  # 10) End-to-end Proba-V pipeline
+  python -m sdp probav-pipeline \\
+      --variant probav_baseline \\
+      --data-path D:\\satellite\\data --split train --band NIR
 """
 
 
@@ -255,41 +280,56 @@ def _cmd_benchmark(args: argparse.Namespace) -> int:
 
 
 def _cmd_visualize(args: argparse.Namespace) -> int:
-    # Build a thin handle so we can reuse the wrapper.
-    handle = DatasetHandle(
-        name="allclear",
-        type="cloud_removal",
-        variant=args.model,
-        dataset_fpath=Path(args.json),
-        run_dir=Path(args.run_dir),
-        model_name=args.model,
-    )
+    dataset = getattr(args, "dataset", "allclear") or "allclear"
+
+    if dataset == "probav":
+        # For Proba-V we need the full dataset handle so the loader can find
+        # the scenes on disk.
+        handle = _build_handle(args)
+        handle.run_dir = Path(args.run_dir)
+    else:
+        handle = DatasetHandle(
+            name="allclear",
+            type="cloud_removal",
+            variant=args.model,
+            dataset_fpath=Path(args.json) if args.json else None,
+            run_dir=Path(args.run_dir),
+            model_name=args.model,
+        )
+
     out = visualize(
         handle,
         num=args.num,
-        start=args.start,
+        start=getattr(args, "start", 0),
         out=Path(args.out) if args.out else None,
-        no_stretch=args.no_stretch,
-        dry_run=args.dry_run,
+        no_stretch=getattr(args, "no_stretch", False),
+        dry_run=getattr(args, "dry_run", False),
     )
     print(f"[sdp] visualization output: {out}")
     return 0
 
 
 def _cmd_metrics(args: argparse.Namespace) -> int:
-    handle = DatasetHandle(
-        name="allclear",
-        type="cloud_removal",
-        variant=args.model,
-        dataset_fpath=Path(args.json),
-        run_dir=Path(args.run_dir),
-        model_name=args.model,
-    )
+    dataset = getattr(args, "dataset", "allclear") or "allclear"
+
+    if dataset == "probav":
+        handle = _build_handle(args)
+        handle.run_dir = Path(args.run_dir)
+    else:
+        handle = DatasetHandle(
+            name="allclear",
+            type="cloud_removal",
+            variant=args.model,
+            dataset_fpath=Path(args.json) if args.json else None,
+            run_dir=Path(args.run_dir),
+            model_name=args.model,
+        )
+
     metrics(
         handle,
-        out_prefix=args.out_prefix,
-        device=args.device,
-        dry_run=args.dry_run,
+        out_prefix=getattr(args, "out_prefix", None),
+        device=getattr(args, "device", None),
+        dry_run=getattr(args, "dry_run", False),
     )
     return 0
 
@@ -315,6 +355,14 @@ def _cmd_pipeline(args: argparse.Namespace) -> int:
         visualize(handle, num=args.num)
     print(f"[sdp] pipeline complete: {handle.run_dir}")
     return 0
+
+
+def _cmd_probav_pipeline(args: argparse.Namespace) -> int:
+    """Convenience: load → benchmark → metrics → visualize for Proba-V."""
+    # Force the dataset/type so we don't need the user to repeat them.
+    args.dataset = "probav"
+    args.type = "super_resolution"
+    return _cmd_pipeline(args)
 
 
 # --------------------------------------------------------------------- #
@@ -361,28 +409,80 @@ def build_parser() -> argparse.ArgumentParser:
 
     # visualize
     p = sub.add_parser("visualize", help="Render visualization panels.")
+    p.add_argument(
+        "--dataset",
+        choices=config.SUPPORTED_DATASETS,
+        default="allclear",
+        help="Dataset whose run to visualize (default: allclear).",
+    )
     p.add_argument("--run-dir", required=True, help="Run directory from a benchmark (required).")
-    p.add_argument("--json", required=True, help="Dataset JSON used for the run (required).")
-    p.add_argument("--model", required=True,
-                   choices=["ctgan", "uncrtaints"],
-                   help="Model whose predictions to visualize (required).")
+    p.add_argument(
+        "--json", default=None,
+        help="Dataset JSON used for the run (AllClear only, required for allclear).",
+    )
+    p.add_argument(
+        "--model", default=None,
+        choices=["ctgan", "uncrtaints", "probav_baseline", "highresnet", "deepsum", "sar_sr"],
+        help="Model whose predictions to visualize (AllClear: required).",
+    )
     p.add_argument("--num", type=int, default=20, help="Number of samples to render.")
     p.add_argument("--start", type=int, default=0)
     p.add_argument("--out", default=None, help="Output folder for PNGs.")
-    p.add_argument("--no-stretch", action="store_true", help="Disable RGB stretching.")
+    p.add_argument("--no-stretch", action="store_true", help="Disable RGB stretching (AllClear only).")
     p.add_argument("--dry-run", action="store_true")
+    # Proba-V scene selection args (forwarded via _build_handle)
+    p.add_argument("--data-path", default=None, help="Root data directory (Proba-V).")
+    p.add_argument("--split", default="test", help="Proba-V split: train/test.")
+    p.add_argument("--band", default="NIR", choices=("NIR", "RED"), help="Proba-V band.")
+    p.add_argument("--scale", type=int, default=3, help="Proba-V SR scale factor.")
+    # Unused AllClear args needed by _build_handle fallback
+    p.add_argument("--variant", default=None)
+    p.add_argument("--type", choices=config.SUPPORTED_TYPES, default="super_resolution")
+    p.add_argument("--dataset-fpath", default=None)
+    p.add_argument("--main-sensor", default="s2_toa")
+    p.add_argument("--aux-sensors", nargs="*", default=[])
+    p.add_argument("--aux-data", nargs="*", default=["cld_shdw", "dw"])
+    p.add_argument("--tx", type=int, default=3)
+    p.add_argument("--target-mode", choices=("s2p", "s2s"), default="s2p")
+    p.add_argument("--selected-rois", default="all")
     p.set_defaults(func=_cmd_visualize)
 
     # metrics
-    p = sub.add_parser("metrics", help="Compute MAE/RMSE/PSNR/SAM/SSIM/LPIPS/FID.")
+    p = sub.add_parser("metrics", help="Compute MAE/RMSE/PSNR/SAM/SSIM/LPIPS/FID (AllClear) or cPSNR/RMSE/SSIM (Proba-V).")
+    p.add_argument(
+        "--dataset",
+        choices=config.SUPPORTED_DATASETS,
+        default="allclear",
+        help="Dataset whose run to score (default: allclear).",
+    )
     p.add_argument("--run-dir", required=True, help="Run directory from a benchmark (required).")
-    p.add_argument("--json", required=True, help="Dataset JSON used for the run (required).")
-    p.add_argument("--model", required=True,
-                   choices=["ctgan", "uncrtaints"],
-                   help="Model whose predictions to score (required).")
+    p.add_argument(
+        "--json", default=None,
+        help="Dataset JSON used for the run (AllClear only, required for allclear).",
+    )
+    p.add_argument(
+        "--model", default=None,
+        choices=["ctgan", "uncrtaints", "probav_baseline", "highresnet", "deepsum", "sar_sr"],
+        help="Model whose predictions to score (AllClear: required).",
+    )
     p.add_argument("--out-prefix", default=None)
     p.add_argument("--device", default=None, help="cpu / cuda / cuda:0.")
     p.add_argument("--dry-run", action="store_true")
+    # Proba-V scene selection args
+    p.add_argument("--data-path", default=None, help="Root data directory (Proba-V).")
+    p.add_argument("--split", default="test", help="Proba-V split: train/test.")
+    p.add_argument("--band", default="NIR", choices=("NIR", "RED"), help="Proba-V band.")
+    p.add_argument("--scale", type=int, default=3, help="Proba-V SR scale factor.")
+    # Unused AllClear args needed by _build_handle fallback
+    p.add_argument("--variant", default=None)
+    p.add_argument("--type", choices=config.SUPPORTED_TYPES, default="super_resolution")
+    p.add_argument("--dataset-fpath", default=None)
+    p.add_argument("--main-sensor", default="s2_toa")
+    p.add_argument("--aux-sensors", nargs="*", default=[])
+    p.add_argument("--aux-data", nargs="*", default=["cld_shdw", "dw"])
+    p.add_argument("--tx", type=int, default=3)
+    p.add_argument("--target-mode", choices=("s2p", "s2s"), default="s2p")
+    p.add_argument("--selected-rois", default="all")
     p.set_defaults(func=_cmd_metrics)
 
     # pipeline (end-to-end convenience)
@@ -395,6 +495,44 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--num", type=int, default=20,
                    help="Visualization sample count (default 20).")
     p.set_defaults(func=_cmd_pipeline)
+
+    # probav-pipeline (Proba-V convenience — fixes dataset/type automatically)
+    p = sub.add_parser(
+        "probav-pipeline",
+        help="End-to-end Proba-V pipeline: load → benchmark → metrics → visualize.",
+    )
+    p.add_argument("--variant", default="probav_baseline",
+                   choices=list(config.SUPPORTED_MODELS["super_resolution"]),
+                   help="SR model (default: probav_baseline).")
+    p.add_argument("--data-path", default=None,
+                   help="Root data directory (overrides $SDP_DATA_PATH).")
+    p.add_argument("--split", default="train", help="Dataset split: train/test.")
+    p.add_argument("--band", default="NIR", choices=("NIR", "RED"), help="Spectral band.")
+    p.add_argument("--scale", type=int, default=3, help="SR scale factor.")
+    p.add_argument("--device", default="cpu", help="cpu / cuda / cuda:0.")
+    p.add_argument("--num", type=int, default=5, help="Visualization sample count.")
+    p.add_argument("--experiment-output-path", default=None,
+                   help="Where to write predictions. Default: results/probav/<variant>.")
+    p.add_argument("--dry-run", action="store_true",
+                   help="Print what would run without executing.")
+    # Hidden stubs so _cmd_pipeline / _build_handle don't blow up on missing attrs
+    p.add_argument("--dataset", default="probav", help=argparse.SUPPRESS)
+    p.add_argument("--type", default="super_resolution", help=argparse.SUPPRESS)
+    p.add_argument("--dataset-fpath", default=None, help=argparse.SUPPRESS)
+    p.add_argument("--main-sensor", default="s2_toa", help=argparse.SUPPRESS)
+    p.add_argument("--aux-sensors", nargs="*", default=[], help=argparse.SUPPRESS)
+    p.add_argument("--aux-data", nargs="*", default=["cld_shdw", "dw"], help=argparse.SUPPRESS)
+    p.add_argument("--tx", type=int, default=3, help=argparse.SUPPRESS)
+    p.add_argument("--target-mode", default="s2p", help=argparse.SUPPRESS)
+    p.add_argument("--selected-rois", default="all", help=argparse.SUPPRESS)
+    p.add_argument("--batch-size", type=int, default=1, help=argparse.SUPPRESS)
+    p.add_argument("--num-workers", type=int, default=0, help=argparse.SUPPRESS)
+    p.add_argument("--draw-vis", type=int, default=0, help=argparse.SUPPRESS)
+    p.add_argument("--uc-baseline-base-path", default="baselines/UnCRtainTS/model", help=argparse.SUPPRESS)
+    p.add_argument("--uc-weight-folder", default="checkpoints", help=argparse.SUPPRESS)
+    p.add_argument("--uc-exp-name", default="utae", help=argparse.SUPPRESS)
+    p.add_argument("--extra", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+    p.set_defaults(func=_cmd_probav_pipeline)
 
     return parser
 

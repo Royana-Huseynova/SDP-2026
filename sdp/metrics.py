@@ -28,11 +28,30 @@ def metrics(
     device: Optional[str] = None,
     dry_run: bool = False,
 ) -> Path:
-    """Compute MAE / RMSE / PSNR / SAM / SSIM / LPIPS / FID for a run."""
+    """
+    Compute quality metrics for a finished run.
+
+    AllClear: MAE / RMSE / PSNR / SAM / SSIM / LPIPS / FID via
+    ``src/Metrics.py``.
+
+    Proba-V: cPSNR / RMSE / SSIM computed directly in Python (no
+    subprocess needed).  Results are written to ``<run_dir>/metrics.json``.
+    """
+    if handle.name == "probav":
+        run_dir = Path(run_dir or handle.run_dir or "")
+        if not run_dir or str(run_dir) == ".":
+            raise ValueError(
+                "No run_dir available. Call sdp.train()/inference() first, "
+                "or pass run_dir explicitly."
+            )
+        if dry_run:
+            return run_dir
+        from ._probav import compute_probav_metrics
+        compute_probav_metrics(handle, run_dir=run_dir)
+        return run_dir
+
     if handle.name != "allclear":
-        raise NotImplementedError(
-            f"metrics() currently only supports AllClear (got {handle.name!r})."
-        )
+        raise ValueError(f"metrics() does not support dataset {handle.name!r}.")
 
     run_dir = Path(run_dir or handle.run_dir or "")
     if not run_dir or str(run_dir) == ".":

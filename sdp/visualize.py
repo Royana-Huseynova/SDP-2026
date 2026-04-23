@@ -30,25 +30,53 @@ def visualize(
     dry_run: bool = False,
 ) -> Path:
     """
-    Render side-by-side panels (input / prediction / target / diff / mask)
-    for `num` samples from the given run.
+    Render side-by-side panels for ``num`` samples from the given run.
+
+    AllClear: input / prediction / target / diff / mask panels via
+    ``src/visualize_allclear.py``.
+
+    Proba-V: best-LR / SR-prediction / HR-target / diff panels rendered
+    directly from ``sdp/_probav.py``.
 
     Parameters
     ----------
     handle : DatasetHandle
     run_dir : Path, optional
-        Override the run_dir stored on the handle (set automatically by
-        :func:`sdp.train` / :func:`sdp.inference`).
+        Override the run_dir stored on the handle.
     json_path : Path, optional
-        Dataset JSON used for the run. Falls back to ``handle.dataset_fpath``.
+        AllClear only — dataset JSON used for the run.
     model : str, optional
-        Model name. Falls back to ``handle.model_name``.
+        AllClear only — model name.
+    num : int
+        Number of samples to render.
+    start : int
+        AllClear only — first sample index.
+    out : Path, optional
+        Output directory for PNGs.
+    no_stretch : bool
+        AllClear only — disable RGB histogram stretching.
+    dry_run : bool
+        Print resolved command without executing.
     """
-    if handle.name != "allclear":
-        raise NotImplementedError(
-            f"visualize() currently only supports AllClear "
-            f"(got {handle.name!r})."
+    if handle.name == "probav":
+        run_dir = Path(run_dir or handle.run_dir or "")
+        if not run_dir or str(run_dir) == ".":
+            raise ValueError(
+                "No run_dir available. Call sdp.train()/inference() first, "
+                "or pass run_dir explicitly."
+            )
+        if dry_run:
+            return (run_dir / "vis")
+        from ._probav import visualize_probav
+        return visualize_probav(
+            handle,
+            run_dir=run_dir,
+            num=num,
+            out=Path(out) if out else None,
         )
+
+    if handle.name != "allclear":
+        raise NotImplementedError(f"visualize() does not support dataset {handle.name!r}.")
 
     run_dir = Path(run_dir or handle.run_dir or "")
     if not run_dir or str(run_dir) == ".":

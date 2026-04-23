@@ -112,13 +112,95 @@ def _run_allclear_benchmark(
 
 
 # --------------------------------------------------------------------- #
-# Proba-V runner stub
+# Proba-V runner
 # --------------------------------------------------------------------- #
+
+# AllClear-specific kwargs that arrive via _cmd_benchmark / _cmd_pipeline
+# but are meaningless for Proba-V — silently discard them.
+_ALLCLEAR_ONLY_KWARGS = frozenset({
+    "uc_baseline_base_path",
+    "uc_weight_folder",
+    "uc_exp_name",
+    "extra_args",
+    "batch_size",
+    "num_workers",
+    "draw_vis",
+})
+
+
 def _run_probav(handle: DatasetHandle, **kwargs: Any) -> Path:
-    raise NotImplementedError(
-        "Proba-V training/inference is not wired yet. Implement "
-        "sdp/_probav.py and the matching train loop, then plug into runner.py."
+    """
+    Run Proba-V super-resolution inference.
+
+    Delegates to the probav submodule's run_inference.py when that script
+    exists and the requested model is not the built-in baseline.  Otherwise
+    runs the clear-pixel-median-composite baseline implemented in
+    sdp/_probav.py.
+    """
+    for key in _ALLCLEAR_ONLY_KWARGS:
+        kwargs.pop(key, None)
+
+    model_name = kwargs.pop("model_name", None) or handle.variant or "probav_baseline"
+    device = kwargs.pop("device", "cpu")
+    experiment_output_path = kwargs.pop("experiment_output_path", None)
+    dry_run = kwargs.pop("dry_run", False)
+
+    if experiment_output_path is None:
+        experiment_output_path = config.RESULTS_DIR / "probav" / model_name
+    run_dir = Path(experiment_output_path)
+
+    # Delegate to the probav submodule runner if it exists and we need a
+    # non-baseline model.
+    submodule_runner = config.REPO_ROOT / "probav" / "run_inference.py"
+    if submodule_runner.exists() and model_name != "probav_baseline":
+        _run_probav_subprocess(
+            handle,
+            model_name=model_name,
+            run_dir=run_dir,
+            device=device,
+            dry_run=dry_run,
+        )
+    else:
+        if dry_run:
+            sys.stderr.write(
+                f"[sdp] [dry-run] Would run probav_baseline → {run_dir}\n"
+            )
+        else:
+            from ._probav import run_probav_baseline
+            run_probav_baseline(handle, run_dir=run_dir)
+
+    handle.run_dir = run_dir
+    handle.model_name = model_name
+    return run_dir
+
+
+def _run_probav_subprocess(
+    handle: DatasetHandle,
+    *,
+    model_name: str,
+    run_dir: Path,
+    device: str = "cpu",
+    dry_run: bool = False,
+) -> None:
+    """Invoke the probav submodule's run_inference.py."""
+    script = config.REPO_ROOT / "probav" / "run_inference.py"
+    cmd: list[str] = [
+        sys.executable, str(script),
+        "--data-path", str(handle.data_path),
+        "--split", handle.split,
+        "--band", handle.extras.get("band", "NIR"),
+        "--scale", str(handle.extras.get("scale", 3)),
+        "--model", model_name,
+        "--run-dir", str(run_dir),
+        "--device", device,
+    ]
+    env = _ensure_kmp_workaround(os.environ.copy())
+    sys.stderr.write(
+        f"[sdp] Launching Proba-V runner:\n"
+        f"      {' '.join(shlex.quote(c) for c in cmd)}\n"
     )
+    if not dry_run:
+        subprocess.run(cmd, cwd=str(config.REPO_ROOT), env=env, check=True)
 
 
 # --------------------------------------------------------------------- #
@@ -141,7 +223,7 @@ def train(handle: DatasetHandle, **kwargs: Any) -> DatasetHandle:
         return handle
     elif handle.name == "probav":
         _run_probav(handle, **kwargs)
-        return handle
+        return handle  # run_dir and model_name set inside _run_probav
     else:
         raise ValueError(f"Unsupported dataset {handle.name!r}")
 
