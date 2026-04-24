@@ -202,3 +202,8 @@ Temporary Items
 ### macOS Patch ###
 # iCloud generated files
 *.icloud
+
+external
+vis
+
+.claude

@@ -218,6 +218,175 @@ def evaluate(sr: np.ndarray,
 
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# AllClear cloud-removal metrics  (multi-band, mask-aware)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def mae_masked(pred: np.ndarray, target: np.ndarray, mask: np.ndarray) -> float:
+    """
+    Mean Absolute Error over valid (non-cloud) pixels across all bands.
+
+    Args:
+        pred, target: (C, H, W) or (H, W) float in [0, 1]
+        mask:         (H, W) bool — True = valid pixel
+
+    Returns:
+        MAE scalar. Lower is better.
+    """
+    pred   = np.asarray(pred,   dtype=np.float64)
+    target = np.asarray(target, dtype=np.float64)
+    mask   = np.asarray(mask,   dtype=bool)
+    if mask.sum() == 0:
+        return float('nan')
+    p = pred[:, mask] if pred.ndim == 3 else pred[mask]
+    t = target[:, mask] if target.ndim == 3 else target[mask]
+    return float(np.abs(p - t).mean())
+
+
+def rmse_masked(pred: np.ndarray, target: np.ndarray, mask: np.ndarray) -> float:
+    """
+    Root Mean Squared Error over valid pixels across all bands.
+
+    Args:
+        pred, target: (C, H, W) or (H, W) float in [0, 1]
+        mask:         (H, W) bool — True = valid pixel
+
+    Returns:
+        RMSE scalar. Lower is better.
+    """
+    pred   = np.asarray(pred,   dtype=np.float64)
+    target = np.asarray(target, dtype=np.float64)
+    mask   = np.asarray(mask,   dtype=bool)
+    if mask.sum() == 0:
+        return float('nan')
+    p = pred[:, mask] if pred.ndim == 3 else pred[mask]
+    t = target[:, mask] if target.ndim == 3 else target[mask]
+    return float(np.sqrt(np.mean((p - t) ** 2)))
+
+
+def psnr_masked(pred: np.ndarray, target: np.ndarray, mask: np.ndarray,
+                data_range: float = 1.0) -> float:
+    """
+    PSNR computed over valid pixels only.
+
+    Args:
+        pred, target: (C, H, W) or (H, W) float in [0, 1]
+        mask:         (H, W) bool — True = valid pixel
+        data_range:   maximum pixel value (default 1.0)
+
+    Returns:
+        PSNR in dB. Higher is better.
+    """
+    pred   = np.asarray(pred,   dtype=np.float64)
+    target = np.asarray(target, dtype=np.float64)
+    mask   = np.asarray(mask,   dtype=bool)
+    if mask.sum() == 0:
+        return float('nan')
+    p = pred[:, mask] if pred.ndim == 3 else pred[mask]
+    t = target[:, mask] if target.ndim == 3 else target[mask]
+    mse = np.mean((p - t) ** 2)
+    if mse == 0:
+        return float('inf')
+    return float(10.0 * np.log10((data_range ** 2) / mse))
+
+
+def sam_masked(pred: np.ndarray, target: np.ndarray, mask: np.ndarray) -> float:
+    """
+    Spectral Angle Mapper over valid pixels (multi-band).
+
+    Computes the mean spectral angle (degrees) between pred and target
+    across all unmasked spatial positions.
+
+    Args:
+        pred, target: (C, H, W) float in [0, 1]  — C >= 1
+        mask:         (H, W) bool — True = valid pixel
+
+    Returns:
+        Mean SAM in degrees. Lower is better, 0 = perfect.
+    """
+    pred   = np.asarray(pred,   dtype=np.float64)
+    target = np.asarray(target, dtype=np.float64)
+    mask   = np.asarray(mask,   dtype=bool)
+
+    if pred.ndim == 2:
+        return float(np.degrees(sam(pred * mask, target * mask)))
+
+    C, H, W = pred.shape
+    p = pred.reshape(C, -1).T[mask.ravel()]    # (N, C)
+    t = target.reshape(C, -1).T[mask.ravel()]
+
+    if len(p) == 0:
+        return float('nan')
+
+    dot    = (p * t).sum(axis=1)
+    norm_p = np.linalg.norm(p, axis=1)
+    norm_t = np.linalg.norm(t, axis=1)
+    denom  = norm_p * norm_t
+    valid  = denom > 0
+    if not valid.any():
+        return float('nan')
+    cos_angle = np.clip(dot[valid] / denom[valid], -1.0, 1.0)
+    return float(np.degrees(np.arccos(cos_angle)).mean())
+
+
+def ssim_masked(pred: np.ndarray, target: np.ndarray, mask: np.ndarray,
+                data_range: float = 1.0) -> float:
+    """
+    Mean per-channel SSIM for multi-band images.
+
+    Args:
+        pred, target: (C, H, W) or (H, W) float in [0, 1]
+        mask:         (H, W) bool  (kept for API consistency)
+        data_range:   maximum pixel value (default 1.0)
+
+    Returns:
+        Mean SSIM across channels. Higher is better, 1 = perfect.
+    """
+    pred   = np.asarray(pred,   dtype=np.float64)
+    target = np.asarray(target, dtype=np.float64)
+
+    if pred.ndim == 2:
+        return float(ssim_fn(pred, target, data_range=data_range))
+
+    scores = [
+        ssim_fn(pred[c], target[c], data_range=data_range)
+        for c in range(pred.shape[0])
+    ]
+    return float(np.mean(scores))
+
+
+def evaluate_allclear(pred: np.ndarray,
+                      target: np.ndarray,
+                      hr_mask: np.ndarray = None) -> dict:
+    """
+    Run all cloud-removal metrics on a single model output vs target.
+
+    Args:
+        pred:    model output  (C, H, W) float in [0, 1]
+        target:  ground truth  (C, H, W) float in [0, 1]
+        hr_mask: valid-pixel mask (H, W) bool — True = clear pixel.
+                 If None, all pixels are treated as valid.
+
+    Returns:
+        dict with keys: mae, rmse, psnr, sam, ssim
+    """
+    pred   = np.asarray(pred,   dtype=np.float64)
+    target = np.asarray(target, dtype=np.float64)
+
+    if hr_mask is None:
+        H = pred.shape[-2] if pred.ndim == 3 else pred.shape[0]
+        W = pred.shape[-1] if pred.ndim == 3 else pred.shape[1]
+        hr_mask = np.ones((H, W), dtype=bool)
+
+    return {
+        "mae":  mae_masked(pred, target, hr_mask),
+        "rmse": rmse_masked(pred, target, hr_mask),
+        "psnr": psnr_masked(pred, target, hr_mask),
+        "sam":  sam_masked(pred, target, hr_mask),
+        "ssim": ssim_masked(pred, target, hr_mask),
+    }
+
+
 def print_scores(scores: dict, scene_name: str = '') -> None:
     """Print metric scores in a readable format."""
     header = f"  Metrics — {scene_name}" if scene_name else "  Metrics"
