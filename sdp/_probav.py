@@ -160,13 +160,78 @@ def _baseline_sr(lrs: torch.Tensor, qms: torch.Tensor, scale: int = 3) -> torch.
 
 
 def _cpsnr(sr: torch.Tensor, hr: torch.Tensor, sm: Optional[torch.Tensor] = None) -> float:
-    """Clearance-masked PSNR (dB) — the official Proba-V challenge metric."""
+    """Simple clearance-masked PSNR — fast version used during baseline inference."""
     mask = (sm.bool().squeeze() if sm is not None else torch.ones_like(hr, dtype=torch.bool).squeeze())
     if mask.sum() == 0:
         return float("nan")
     diff = (sr.squeeze() - hr.squeeze())[mask]
     mse = (diff ** 2).mean().item()
     return -10.0 * np.log10(mse) if mse > 0 else float("inf")
+
+
+def _psnr_np(sr: np.ndarray, hr: np.ndarray) -> float:
+    """Plain PSNR (dB) on float [0,1] arrays."""
+    mse = float(np.mean((sr.astype(np.float64) - hr.astype(np.float64)) ** 2))
+    if mse == 0:
+        return float("inf")
+    return float(10.0 * np.log10(1.0 / mse))
+
+
+def _cpsnr_shifted(sr: np.ndarray, hr: np.ndarray, mask: np.ndarray, border: int = 3) -> float:
+    """
+    Official-style Proba-V cPSNR with sub-pixel shift search and bias correction.
+
+    Searches all (u, v) shifts within ±border to find the best SR/HR alignment,
+    applies per-shift brightness bias correction, and returns the highest cPSNR.
+    """
+    sr = sr.astype(np.float64)
+    hr = hr.astype(np.float64)
+    mask = mask.astype(bool)
+    H, W = sr.shape
+    c = border
+    sr_crop = sr[c:H - c, c:W - c].ravel()
+
+    best_cMSE = np.inf
+    for u in range(2 * c + 1):
+        for v in range(2 * c + 1):
+            hr_crop = hr[u:u + (H - 2 * c), v:v + (W - 2 * c)].ravel()
+            m_crop = mask[u:u + (H - 2 * c), v:v + (W - 2 * c)].ravel()
+            if m_crop.sum() == 0:
+                continue
+            _hr = hr_crop[m_crop]
+            _sr = sr_crop[m_crop]
+            b = np.mean(_hr - _sr)
+            diff = _hr - (_sr + b)
+            cMSE = float(np.mean(diff * diff))
+            best_cMSE = min(best_cMSE, cMSE)
+
+    if best_cMSE == np.inf:
+        return float("nan")
+    if best_cMSE == 0:
+        return float("inf")
+    return float(-10.0 * np.log10(best_cMSE))
+
+
+def _sam_np(sr: np.ndarray, hr: np.ndarray) -> float:
+    """Spectral Angle Mapper for single-band images (radians, lower is better)."""
+    sr = sr.astype(np.float64).ravel()
+    hr = hr.astype(np.float64).ravel()
+    dot = np.dot(sr, hr)
+    ns, nh = np.linalg.norm(sr), np.linalg.norm(hr)
+    if ns == 0 or nh == 0:
+        return 0.0
+    return float(np.arccos(np.clip(dot / (ns * nh), -1.0, 1.0)))
+
+
+def _ergas_np(sr: np.ndarray, hr: np.ndarray, scale: int = 3) -> float:
+    """ERGAS — normalized global error for satellite SR (lower is better)."""
+    sr = sr.astype(np.float64)
+    hr = hr.astype(np.float64)
+    hr_mean = hr.mean()
+    if hr_mean == 0:
+        return 0.0
+    rmse = float(np.sqrt(np.mean((sr - hr) ** 2)))
+    return float(100.0 * (1.0 / scale) * (rmse / hr_mean))
 
 
 def _save_sr_png(sr: torch.Tensor, path: Path) -> None:
@@ -240,8 +305,8 @@ def run_probav_baseline(handle: "DatasetHandle", *, run_dir: Path, **_: Any) -> 
 
 def compute_probav_metrics(handle: "DatasetHandle", *, run_dir: Path) -> dict:
     """
-    Load saved SR predictions and compute cPSNR / SSIM / RMSE against HR.
-    Writes <run_dir>/metrics.json and returns the aggregate dict.
+    Load saved SR predictions and compute cPSNR / PSNR / SSIM / RMSE / SAM / ERGAS
+    against HR ground truth. Writes <run_dir>/metrics.json and returns the aggregate.
     """
     try:
         from skimage.metrics import structural_similarity as ssim_fn
@@ -250,6 +315,7 @@ def compute_probav_metrics(handle: "DatasetHandle", *, run_dir: Path) -> dict:
         _has_skimage = False
 
     ds = _get_dataset(handle)
+    scale = ds.scale
     run_dir = Path(run_dir)
     results: list[dict] = []
 
@@ -267,24 +333,23 @@ def compute_probav_metrics(handle: "DatasetHandle", *, run_dir: Path) -> dict:
         hr = sample["hr"]
         sm = sample.get("sm")
 
+        sr_np = sr.squeeze().numpy().astype(np.float64)
+        hr_np = hr.squeeze().numpy().astype(np.float64)
+        mask_np = (sm.squeeze().numpy() > 0) if sm is not None else np.ones_like(hr_np, dtype=bool)
+
         entry: dict = {"scene": scene}
-        entry["cpsnr"] = _cpsnr(sr, hr, sm)
-
-        sr_np = sr.squeeze().numpy()
-        hr_np = hr.squeeze().numpy()
-        mask_np = (sm.squeeze().numpy() > 0) if sm is not None else None
-        if mask_np is not None:
-            entry["rmse"] = float(np.sqrt(((sr_np[mask_np] - hr_np[mask_np]) ** 2).mean()))
-        else:
-            entry["rmse"] = float(np.sqrt(((sr_np - hr_np) ** 2).mean()))
-
+        entry["psnr"] = _psnr_np(sr_np, hr_np)
+        entry["cpsnr"] = _cpsnr_shifted(sr_np, hr_np, mask_np)
+        entry["rmse"] = float(np.sqrt(((sr_np[mask_np] - hr_np[mask_np]) ** 2).mean()))
+        entry["sam"] = _sam_np(sr_np, hr_np)
+        entry["ergas"] = _ergas_np(sr_np, hr_np, scale=scale)
         if _has_skimage:
             entry["ssim"] = float(ssim_fn(sr_np, hr_np, data_range=1.0))
 
         results.append(entry)
 
     agg: dict[str, Any] = {"scenes": results}
-    for key in ("cpsnr", "rmse", "ssim"):
+    for key in ("psnr", "cpsnr", "rmse", "ssim", "sam", "ergas"):
         vals = [r[key] for r in results if key in r and not np.isnan(r[key])]
         if vals:
             agg[f"mean_{key}"] = float(np.mean(vals))
@@ -292,6 +357,87 @@ def compute_probav_metrics(handle: "DatasetHandle", *, run_dir: Path) -> dict:
 
     (run_dir / "metrics.json").write_text(json.dumps(agg, indent=2))
     return agg
+
+
+# ---------------------------------------------------------------------------
+# Public: RAMS runner
+# ---------------------------------------------------------------------------
+
+def run_probav_rams(handle: "DatasetHandle", *, run_dir: Path, **_: Any) -> None:
+    """
+    Run the RAMS super-resolution model (from SDP-2026-probav/) over every scene.
+
+    Outputs per scene:
+        <run_dir>/<scene>/SR.png
+    Outputs aggregate:
+        <run_dir>/summary.json  (per-scene cPSNR + mean, when ground truth exists)
+    """
+    from . import config as _config
+
+    probav_dir = str(_config.PROBAV_DIR)
+    if probav_dir not in sys.path:
+        sys.path.insert(0, probav_dir)
+
+    try:
+        from models.rams.model import RAMSModel  # type: ignore
+    except ImportError as exc:
+        raise ImportError(
+            "Could not import RAMSModel from SDP-2026-probav/models/rams/model.py. "
+            "Make sure TensorFlow is installed and SDP-2026-probav/ is present."
+        ) from exc
+
+    ds = _get_dataset(handle)
+    band = handle.extras.get("band", "NIR")
+    run_dir = Path(run_dir)
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    model = RAMSModel(band=band)
+
+    results: list[dict] = []
+    n = len(ds)
+    for i, sample in enumerate(ds):
+        scene = sample["scene"]
+        lrs = sample["lrs"]   # (T, 1, H, W) float32
+        qms = sample["qms"]   # (T, 1, H, W) float32
+
+        # RAMS expects (T, H, W) numpy float32
+        lrs_np = lrs[:, 0, :, :].numpy()   # (T, H, W)
+        qms_np = qms[:, 0, :, :].numpy().astype(bool)
+
+        sr_np = model.predict(lrs_np, qms_np)  # (H*3, W*3) float32 [0,1]
+        sr_tensor = torch.from_numpy(sr_np)[None]  # (1, H*3, W*3)
+
+        scene_dir = run_dir / scene
+        scene_dir.mkdir(exist_ok=True)
+        _save_sr_png(sr_tensor, scene_dir / "SR.png")
+
+        entry: dict = {"scene": scene}
+        if "hr" in sample:
+            hr_np = sample["hr"].squeeze().numpy().astype(np.float64)
+            mask_np = (
+                sample["sm"].squeeze().numpy() > 0
+                if "sm" in sample
+                else np.ones_like(hr_np, dtype=bool)
+            )
+            entry["cpsnr"] = _cpsnr_shifted(sr_np.astype(np.float64), hr_np, mask_np)
+        results.append(entry)
+
+        sys.stderr.write(
+            f"\r[sdp] rams {i + 1}/{n}: {scene}"
+            + (f"  cPSNR={entry['cpsnr']:.3f} dB" if "cpsnr" in entry else "")
+        )
+        sys.stderr.flush()
+
+    sys.stderr.write("\n")
+
+    summary: dict[str, Any] = {"model": "rams", "scenes": results}
+    cpsnr_vals = [r["cpsnr"] for r in results if "cpsnr" in r and not np.isnan(r["cpsnr"])]
+    if cpsnr_vals:
+        summary["mean_cpsnr"] = float(np.mean(cpsnr_vals))
+        sys.stderr.write(f"[sdp] mean cPSNR = {summary['mean_cpsnr']:.4f} dB\n")
+
+    (run_dir / "summary.json").write_text(json.dumps(summary, indent=2))
+    sys.stderr.write(f"[sdp] RAMS results saved to {run_dir}\n")
 
 
 # ---------------------------------------------------------------------------

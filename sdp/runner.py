@@ -132,10 +132,10 @@ def _run_probav(handle: DatasetHandle, **kwargs: Any) -> Path:
     """
     Run Proba-V super-resolution inference.
 
-    Delegates to the probav submodule's run_inference.py when that script
-    exists and the requested model is not the built-in baseline.  Otherwise
-    runs the clear-pixel-median-composite baseline implemented in
-    sdp/_probav.py.
+    Routes to the appropriate runner based on model_name:
+      - "probav_baseline" : clear-pixel median composite + bicubic upsample
+      - "rams"            : RAMS TensorFlow model from SDP-2026-probav/
+      - anything else     : subprocess via SDP-2026-probav/run_inference.py
     """
     for key in _ALLCLEAR_ONLY_KWARGS:
         kwargs.pop(key, None)
@@ -149,10 +149,15 @@ def _run_probav(handle: DatasetHandle, **kwargs: Any) -> Path:
         experiment_output_path = config.RESULTS_DIR / "probav" / model_name
     run_dir = Path(experiment_output_path)
 
-    # Delegate to the probav submodule runner if it exists and we need a
-    # non-baseline model.
-    submodule_runner = config.REPO_ROOT / "probav" / "run_inference.py"
-    if submodule_runner.exists() and model_name != "probav_baseline":
+    if dry_run:
+        sys.stderr.write(f"[sdp] [dry-run] Would run {model_name} → {run_dir}\n")
+    elif model_name == "probav_baseline":
+        from ._probav import run_probav_baseline
+        run_probav_baseline(handle, run_dir=run_dir)
+    elif model_name == "rams":
+        from ._probav import run_probav_rams
+        run_probav_rams(handle, run_dir=run_dir)
+    else:
         _run_probav_subprocess(
             handle,
             model_name=model_name,
@@ -160,14 +165,6 @@ def _run_probav(handle: DatasetHandle, **kwargs: Any) -> Path:
             device=device,
             dry_run=dry_run,
         )
-    else:
-        if dry_run:
-            sys.stderr.write(
-                f"[sdp] [dry-run] Would run probav_baseline → {run_dir}\n"
-            )
-        else:
-            from ._probav import run_probav_baseline
-            run_probav_baseline(handle, run_dir=run_dir)
 
     handle.run_dir = run_dir
     handle.model_name = model_name
@@ -182,8 +179,14 @@ def _run_probav_subprocess(
     device: str = "cpu",
     dry_run: bool = False,
 ) -> None:
-    """Invoke the probav submodule's run_inference.py."""
-    script = config.REPO_ROOT / "probav" / "run_inference.py"
+    """Invoke SDP-2026-probav/run_inference.py for non-built-in models."""
+    script = config.PROBAV_DIR / "run_inference.py"
+    if not script.exists():
+        raise FileNotFoundError(
+            f"No run_inference.py found at {script}. "
+            f"Model {model_name!r} is not supported as a built-in; "
+            f"implement it in SDP-2026-probav/run_inference.py or add it to _probav.py."
+        )
     cmd: list[str] = [
         sys.executable, str(script),
         "--data-path", str(handle.data_path),

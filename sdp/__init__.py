@@ -28,6 +28,7 @@ Terminal usage
 from .config import (
     REPO_ROOT,
     EXTERNAL_DIR,
+    PROBAV_DIR,
     RESULTS_DIR,
     METADATA_DIR,
     SUPPORTED_DATASETS,
@@ -47,6 +48,7 @@ from .api import (
 __all__ = [
     "REPO_ROOT",
     "EXTERNAL_DIR",
+    "PROBAV_DIR",
     "RESULTS_DIR",
     "METADATA_DIR",
     "SUPPORTED_DATASETS",

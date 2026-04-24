@@ -18,6 +18,7 @@ from pathlib import Path
 REPO_ROOT: Path = Path(__file__).resolve().parent.parent
 
 EXTERNAL_DIR: Path = REPO_ROOT / "external"
+PROBAV_DIR:   Path = REPO_ROOT / "SDP-2026-probav"
 RESULTS_DIR:  Path = REPO_ROOT / "results"
 SCRIPTS_DIR:  Path = REPO_ROOT / "scripts"
 SRC_DIR:      Path = REPO_ROOT / "src"
@@ -59,6 +60,7 @@ SUPPORTED_MODELS: dict[str, tuple[str, ...]] = {
     ),
     "super_resolution": (
         "probav_baseline",
+        "rams",
         "highresnet",
         "deepsum",
         "sar_sr",
