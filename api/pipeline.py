@@ -1,55 +1,74 @@
 """
 pipeline.py — Unified SR Evaluation Pipeline
+Registry-based for easy expansion.
 """
 
 import numpy as np
-from datasets.probav import ProbaVDataset
+
+# Imports
+from datasets.probav.probav import ProbaVDataset
 from models.baselines.baseline_upscale import BicubicModel
 from models.baselines.central_tendency import MedianModel
 from models.RAMS.model import RAMSModel
 from metrics.metrics import evaluate
 
-DATASETS = {"probav": ProbaVDataset}
-MODELS   = {
+# ─────────────────────────────────────────────────────────────────────────────
+# Registry — Add new datasets / models here
+# ─────────────────────────────────────────────────────────────────────────────
+
+DATASETS = {
+    "probav": ProbaVDataset,
+    # "new_dataset": NewDatasetClass,
+}
+
+MODELS = {
     "bicubic": lambda: BicubicModel(),
     "median":  lambda: MedianModel(),
     "rams":    lambda: RAMSModel(band='NIR'),
+    # "new_model": lambda: NewModelClass(),
 }
+
 METRICS = ["psnr", "ssim", "cpsnr", "sam", "ergas"]
 
-def get_dataset(name: str, base_path: str):
-    return DATASETS[name](base_path=base_path)
+# ─────────────────────────────────────────────────────────────────────────────
+# Logic
+# ─────────────────────────────────────────────────────────────────────────────
 
-def get_model(name: str):
-    return MODELS[name]()
-
-def filter_metrics(results: dict, selected: list) -> dict:
-    return {k: v for k, v in results.items() if k in selected}
-
-def run_pipeline(dataset_name="probav", base_path="path", model_name="bicubic", metrics=None, n_scenes=1):
+def run_pipeline(dataset_name, base_path, model_name, metrics=None, n_scenes=1):
     if metrics is None: metrics = METRICS
-    
-    dataset = get_dataset(dataset_name, base_path)
-    model   = get_model(model_name)
-    all_results = []
+
+    # Get the dataset and model classes from the Registry
+    dataset = DATASETS[dataset_name](base_path=base_path)
+    model   = MODELS[model_name]()
+
+    print(f"\n{'═' * 50}")
+    print(f" Dataset : {dataset_name}")
+    print(f" Model   : {model_name}")
+    print(f" Scenes  : {n_scenes}")
+    print(f"{'═' * 50}\n")
 
     for i in range(n_scenes):
-        # Unpack 5 items now: lr, hr, lr_mask, hr_mask, name
-        lr, hr, lr_mask, hr_mask, name = dataset.load_sample(i)
+        # 1. Unpack the 5 items returned by the updated dataset
+        lr, hr, _, hr_mask, name = dataset.load_sample(i)
 
         print(f"[{i+1}/{n_scenes}] Scene: {name}")
-        
-        # Run prediction
+
+        # 2. Run prediction
         predictions = model.predict(lr)
 
-        # Pass the HR mask (384x384) to evaluate() instead of the LR mask
+        # 3. Evaluate with the HR mask
         scores = evaluate(predictions, hr, hr_mask=hr_mask)
-        scores = filter_metrics(scores, metrics)
-
-        print("  Metrics:")
+        
+        # 4. Print metrics
         for k, v in scores.items():
-            print(f"    {k.upper():<6}: {v:.4f}")
+            if k in metrics:
+                print(f"    {k.upper():<6}: {v:.4f}")
 
-        all_results.append({"scene": name, **scores})
-
-    return all_results
+if __name__ == "__main__":
+    # Example direct run
+    run_pipeline(
+        dataset_name="probav",
+        base_path="/Users/royana/Desktop/probav_data/train",
+        model_name="bicubic",
+        n_scenes=1
+    )
