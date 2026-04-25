@@ -209,4 +209,9 @@ vis
 .claude
 
 
-results
+resultsdataset/ 
+checkpoints/ 
+*.zip 
+*.pt 
+*.tif 
+*.npy 
