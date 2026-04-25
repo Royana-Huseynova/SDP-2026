@@ -226,3 +226,5 @@ bfg.jar
 *.pt
 results/
 models/**/ckpt/
+
+probav_data
