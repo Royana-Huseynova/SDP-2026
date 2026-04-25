@@ -1,9 +1,0 @@
-{
-  "model": "uncrtaints",
-  "prediction_file": "C:\\Users\\User\\Desktop\\SDP\\allclear_test_proi1_v1\\SDP-2026-1\\results\\baseline\\uncrtaints\\noSAR_1\\AllClear\\test_tx3_s2-s1_100pct_1proi_local\\uncrtaints_predictions.pt",
-  "dataset_json": "external\\metadata\\datasets\\test_tx3_s2-s1_100pct_1proi_local.json",
-  "mask_rule": "Mask derived from target path by replacing s2_toa -> cld_shdw and _s2_toa_ -> _cld_shdw_",
-  "lpips_note": "Computed on RGB projection only",
-  "fid_note": "Computed on RGB projection only",
-  "qnr_note": "QNR_like is only a rough surrogate, not a standard cloud-removal metric"
-}

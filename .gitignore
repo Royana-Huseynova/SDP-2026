@@ -209,9 +209,20 @@ vis
 .claude
 
 
-resultsdataset/ 
+results/
+dataset/ 
 checkpoints/ 
 *.zip 
 *.pt 
 *.tif 
 *.npy 
+
+bigfiles_with_ids.txt
+bigfiles.txt
+bfg.jar
+
+*.ckpt*
+*.pth
+*.pt
+results/
+models/**/ckpt/
