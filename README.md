@@ -63,5 +63,3 @@ This website serves as the primary platform for presenting the UnifiedSatAI proj
 - `assets/` - Satellite imagery and result visualizations
 
 ---
-
-Made with care for the SDP-2026 project.
