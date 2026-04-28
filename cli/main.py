@@ -76,8 +76,8 @@ def parse_args():
     p.add_argument(
         "--n_scenes",
         type=int,
-        default=1,
-        help="Number of scenes / samples to evaluate (default: 1)",
+        default=None,
+        help="Number of scenes to evaluate. Omit or pass -1 to run the full dataset.",
     )
 
     # ── AllClear-specific options ──────────────────────────────────────────────

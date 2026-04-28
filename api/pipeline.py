@@ -123,6 +123,10 @@ def run_pipeline(dataset_name, base_path, model_name, metrics=None, n_scenes=1,
     else:
         dataset = dataset_cls(json_path=base_path, **dataset_kwargs)
 
+    # ── resolve n_scenes: None or -1 means the full dataset ──────────────────
+    if n_scenes is None or n_scenes < 0:
+        n_scenes = len(dataset)
+
     # ── build model ───────────────────────────────────────────────────────────
     model = MODELS[model_name](**(model_kwargs or {}))
 
