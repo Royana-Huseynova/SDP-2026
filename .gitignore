@@ -228,3 +228,5 @@ results/
 models/**/ckpt/
 
 probav_data
+res
+

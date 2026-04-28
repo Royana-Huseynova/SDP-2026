@@ -222,6 +222,21 @@ def evaluate(sr: np.ndarray,
 # AllClear cloud-removal metrics  (multi-band, mask-aware)
 # ─────────────────────────────────────────────────────────────────────────────
 
+# Lazy singleton so the LPIPS network is loaded once per process
+_lpips_fn = None
+
+def _get_lpips_fn(net: str = 'alex'):
+    global _lpips_fn
+    if _lpips_fn is None:
+        try:
+            import lpips as _lpips_lib
+        except ImportError:
+            raise ImportError(
+                "lpips package not found. Install it with:  pip install lpips"
+            )
+        _lpips_fn = _lpips_lib.LPIPS(net=net, verbose=False)
+    return _lpips_fn
+
 def mae_masked(pred: np.ndarray, target: np.ndarray, mask: np.ndarray) -> float:
     """
     Mean Absolute Error over valid (non-cloud) pixels across all bands.
@@ -355,6 +370,61 @@ def ssim_masked(pred: np.ndarray, target: np.ndarray, mask: np.ndarray,
     return float(np.mean(scores))
 
 
+def lpips_masked(pred: np.ndarray, target: np.ndarray, mask: np.ndarray,
+                 net: str = 'alex') -> float:
+    """
+    LPIPS (Learned Perceptual Image Patch Similarity) on the RGB composite.
+
+    LPIPS uses a pretrained AlexNet (default) or VGG to measure perceptual
+    distance between two images — unlike pixel-level metrics it captures
+    texture and structural differences the way humans perceive them.
+
+    Because LPIPS was designed for 3-channel RGB images, this function
+    extracts Sentinel-2 bands 3, 2, 1 (R, G, B at 0-based index) to form
+    the RGB composite. Invalid pixels (mask==False) are replaced with the
+    per-channel mean of valid pixels before scoring, which minimises
+    boundary artefacts at cloud edges.
+
+    Args:
+        pred, target: (C, H, W) float32 in [0, 1]
+        mask:         (H, W) bool — True = valid pixel
+        net:          backbone network — 'alex' (default, fast) or 'vgg'
+
+    Returns:
+        LPIPS scalar in [0, 1]. Lower is better, 0 = identical.
+    """
+    import torch
+
+    _S2_RGB = (3, 2, 1)
+    pred   = np.asarray(pred,   dtype=np.float32)
+    target = np.asarray(target, dtype=np.float32)
+    mask   = np.asarray(mask,   dtype=bool)
+
+    C = pred.shape[0]
+    rgb_idx = [min(b, C - 1) for b in _S2_RGB]
+
+    p_rgb = pred[rgb_idx].copy()    # (3, H, W)
+    t_rgb = target[rgb_idx].copy()  # (3, H, W)
+
+    # replace invalid pixels with per-channel mean of valid pixels
+    if mask.any() and not mask.all():
+        for c in range(3):
+            fill_p = float(p_rgb[c][mask].mean())
+            fill_t = float(t_rgb[c][mask].mean())
+            p_rgb[c][~mask] = fill_p
+            t_rgb[c][~mask] = fill_t
+
+    # scale [0, 1] → [-1, 1] (LPIPS convention)
+    p_t = torch.from_numpy(p_rgb).unsqueeze(0) * 2.0 - 1.0  # (1, 3, H, W)
+    t_t = torch.from_numpy(t_rgb).unsqueeze(0) * 2.0 - 1.0
+
+    loss_fn = _get_lpips_fn(net)
+    with torch.no_grad():
+        score = loss_fn(p_t, t_t)
+
+    return float(score.item())
+
+
 def evaluate_allclear(pred: np.ndarray,
                       target: np.ndarray,
                       hr_mask: np.ndarray = None) -> dict:
@@ -368,7 +438,7 @@ def evaluate_allclear(pred: np.ndarray,
                  If None, all pixels are treated as valid.
 
     Returns:
-        dict with keys: mae, rmse, psnr, sam, ssim
+        dict with keys: mae, rmse, psnr, sam, ssim, lpips
     """
     pred   = np.asarray(pred,   dtype=np.float64)
     target = np.asarray(target, dtype=np.float64)
@@ -378,13 +448,22 @@ def evaluate_allclear(pred: np.ndarray,
         W = pred.shape[-1] if pred.ndim == 3 else pred.shape[1]
         hr_mask = np.ones((H, W), dtype=bool)
 
-    return {
+    scores = {
         "mae":  mae_masked(pred, target, hr_mask),
         "rmse": rmse_masked(pred, target, hr_mask),
         "psnr": psnr_masked(pred, target, hr_mask),
         "sam":  sam_masked(pred, target, hr_mask),
         "ssim": ssim_masked(pred, target, hr_mask),
     }
+
+    try:
+        scores["lpips"] = lpips_masked(
+            pred.astype(np.float32), target.astype(np.float32), hr_mask
+        )
+    except ImportError:
+        pass   # lpips not installed — skip silently
+
+    return scores
 
 
 def print_scores(scores: dict, scene_name: str = '') -> None:

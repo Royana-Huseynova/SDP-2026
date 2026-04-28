@@ -24,9 +24,11 @@ Usage examples:
         --show
 """
 
+import json
 import argparse
 from api.pipeline import (
-    run_pipeline, DATASETS, MODELS, SR_METRICS, ALLCLEAR_METRICS, DATASET_TASK,
+    run_pipeline, compare_models,
+    DATASETS, MODELS, SR_METRICS, ALLCLEAR_METRICS, DATASET_TASK,
 )
 
 ALL_METRICS = list(dict.fromkeys(SR_METRICS + ALLCLEAR_METRICS))  # deduped, order preserved
@@ -60,6 +62,24 @@ def parse_args():
         default="bicubic",
         choices=list(MODELS),
         help="Model to run (default: bicubic)",
+    )
+    p.add_argument(
+        "--model2",
+        type=str,
+        default=None,
+        choices=list(MODELS),
+        help="Second model for side-by-side comparison. When set, switches to compare mode.",
+    )
+    p.add_argument(
+        "--model2_kwargs",
+        type=str,
+        default=None,
+        metavar="JSON",
+        help=(
+            "Constructor kwargs for --model2 as a JSON string.\n"
+            "Example: '{\"exp_name\": \"multitemporalL2\"}'\n"
+            "For uncrtaints as model2 you can also use --uc2_exp_name."
+        ),
     )
     p.add_argument(
         "--metrics",
@@ -132,6 +152,12 @@ def parse_args():
         help="UnCRtainTS experiment name (subfolder with conf.json + model.pth.tar)",
     )
     uc.add_argument(
+        "--uc2_exp_name",
+        type=str,
+        default=None,
+        help="UnCRtainTS checkpoint for --model2 (shortcut for --model2_kwargs '{\"exp_name\": ...}')",
+    )
+    uc.add_argument(
         "--device",
         type=str,
         default="cpu",
@@ -169,6 +195,7 @@ def main():
             "center_crop_size": tuple(args.center_crop_size),
         }
 
+    # ── model A kwargs ────────────────────────────────────────────────────────
     model_kwargs = None
     if args.model == "uncrtaints":
         model_kwargs = {
@@ -178,17 +205,46 @@ def main():
             "device":          args.device,
         }
 
-    run_pipeline(
-        dataset_name = args.dataset,
-        base_path    = args.data_path,
-        model_name   = args.model,
-        metrics      = args.metrics,
-        n_scenes     = args.n_scenes,
-        save_dir     = args.save_dir,
-        show         = args.show,
-        model_kwargs = model_kwargs,
-        **dataset_kwargs,
-    )
+    # ── model B kwargs (compare mode) ────────────────────────────────────────
+    model_kwargs_b = None
+    if args.model2 is not None:
+        if args.model2_kwargs:
+            model_kwargs_b = json.loads(args.model2_kwargs)
+        elif args.model2 == "uncrtaints":
+            model_kwargs_b = {
+                "baseline_dir":    args.uc_baseline_dir,
+                "checkpoints_dir": args.uc_checkpoints_dir,
+                "exp_name":        args.uc2_exp_name or args.uc_exp_name,
+                "device":          args.device,
+            }
+
+    # ── dispatch ──────────────────────────────────────────────────────────────
+    if args.model2 is not None:
+        compare_models(
+            dataset_name   = args.dataset,
+            base_path      = args.data_path,
+            model_name_a   = args.model,
+            model_name_b   = args.model2,
+            model_kwargs_a = model_kwargs,
+            model_kwargs_b = model_kwargs_b,
+            metrics        = args.metrics,
+            n_scenes       = args.n_scenes,
+            save_dir       = args.save_dir,
+            show           = args.show,
+            **dataset_kwargs,
+        )
+    else:
+        run_pipeline(
+            dataset_name = args.dataset,
+            base_path    = args.data_path,
+            model_name   = args.model,
+            metrics      = args.metrics,
+            n_scenes     = args.n_scenes,
+            save_dir     = args.save_dir,
+            show         = args.show,
+            model_kwargs = model_kwargs,
+            **dataset_kwargs,
+        )
 
 
 if __name__ == "__main__":

@@ -105,8 +105,22 @@ class UnCRtainTS:
         tgt   = sample_dict["target"].unsqueeze(0)         # (1, C, 1, H, W)
         diffs = sample_dict["time_differences"].unsqueeze(0).to(self.device)  # (1, T)
 
-        # (1, C, T, H, W) → (1, T, C, H, W), keep only supported input channels
-        imgs = imgs.permute(0, 2, 1, 3, 4)[:, :, : self.num_input_dims].to(self.device)
+        # (1, C, T, H, W) → (1, T, C, H, W)
+        imgs = imgs.permute(0, 2, 1, 3, 4).to(self.device)  # (1, T, C, H, W)
+
+        # Pad missing channels with zeros when SAR data is absent but the
+        # checkpoint expects more channels (e.g. multitemporalL2 needs 15).
+        C_avail = imgs.shape[2]
+        if C_avail < self.num_input_dims:
+            pad = torch.zeros(
+                imgs.shape[0], imgs.shape[1],
+                self.num_input_dims - C_avail,
+                imgs.shape[3], imgs.shape[4],
+                device=self.device,
+            )
+            imgs = torch.cat([imgs, pad], dim=2)
+        else:
+            imgs = imgs[:, :, : self.num_input_dims]
         tgt  = tgt.permute(0, 2, 1, 3, 4)[:, :, : self.S2_BANDS].to(self.device)
 
         # (1, 2, T, H, W) → combined (1, T, H, W) cloud mask
