@@ -2,7 +2,7 @@
 
 A unified benchmark pipeline for evaluating satellite image deep-learning models, supporting **super-resolution** (Proba-V) and **cloud removal** (AllClear) tasks.
 
-![Pipeline Architecture](images/pipeline_architercture.png)
+![Pipeline Architecture](images/pipeline_architecture.jpeg)
 
 ---
 
